@@ -1,1 +1,4 @@
 /node_modules
+/dist
+/compile
+/DS_Store
