@@ -19,6 +19,10 @@ function httppost(options, postData, callback, cbdata) {
             callback(retdata, cbdata);
         });
     });
+    req.on('error', (e) => {
+        console.log(`problem with request: ${e.message}`);
+        callback(null,cbdata);
+    });
     req.write(postData + "&authtime=" + new Date().getTime());
     req.end();
 
@@ -48,7 +52,10 @@ function httpmultipart(options, fileKeyValue, callback, cbdata) {
             callback(retdata, cbdata);
         });
     });
-
+    req.on('error', (e) => {
+        console.log(`problem with request: ${e.message}`);
+        callback(null,cbdata);
+    });
     var boundaryKey = Math.random().toString(16);
     var enddata = '\r\n----' + boundaryKey + '--';
 
@@ -236,9 +243,13 @@ function httpdownload(options, postData, filepath, callback, cbdata) {
                     fs.unlinkSync(filepath);
                 }
             }
-            
+
             callback(retdata, cbdata);
         });
+    });
+    req.on('error', (e) => {
+        console.log(`problem with request: ${e.message}`);
+        callback(null,cbdata);
     });
     req.write(postData + "&authtime=" + new Date().getTime());
     req.end();

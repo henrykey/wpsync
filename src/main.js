@@ -8,6 +8,7 @@ const path = require('path');
 const menubar = require('menubar')
 const Menu = electron.Menu
 const ipcMain = electron.ipcMain
+const ipcRender = electron.ipcRenderer;
 //加载同步模块
 var sync = require('./components/sync');
 //设置同步完成后的回调事件
@@ -20,8 +21,6 @@ var fileAlert = require('./components/jpwnotify');
 //LoadUserInfo()
 let autoLaunch = true
 let iconSetting = 'auto'
-
-//tesing
 
 var fileChangeInfo = '已同步!';//显示文件状态信息
 var userInfo = null;//显示的用户信息
@@ -140,15 +139,76 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       ipcMain.emit("setFileAlert", _conf.localDir + "/" + _conf.user + "/MyFiles");
 
     }
+    mb.window.webContents.send('setsyncfinished', arg);
     console.log("set syncfinished:" + arg);
   });
 
   ipcMain.on('userinfo', function (event, arg) { //自定义获取用户信息
-    userInfo = '扈三娘 husn@liangshan.com.cn'
+    var _conf = getconf();    
     console.log(arg);
-    event.sender.send('userinfo', userInfo);//将信息发送至窗体
-  });
+    //尝试登陆
+    var strs = _conf.wpaddr.split(":");
+    var host = _conf.wpaddr;
+    var port = 80;
+    if (strs.length == 2) {
+      host = strs[0];
+      port = strs[1];
+    }
+    var opt = {
+      'host': host,
+      'port': port,
+      'user': _conf.user,
+      'passwd': _conf.passwd
+    };
 
+    //test login
+    
+    wpservice.login(opt, function (data, cbdata) {
+      userInfo = null;
+      //登录失败
+      if (data == null || data.status < 0) {
+
+      }
+      //登录成功
+      else {
+        userInfo = data;
+      }
+      event.sender.send('userinfo', userInfo);//将信息发送至窗体
+    });
+
+  });
+  ipcMain.on('refreshuserinfo', function (event) { //刷新登录用户信息
+    var _conf = getconf();    
+    //登陆
+    var strs = _conf.wpaddr.split(":");
+    var host = _conf.wpaddr;
+    var port = 80;
+    if (strs.length == 2) {
+      host = strs[0];
+      port = strs[1];
+    }
+    var opt = {
+      'host': host,
+      'port': port,
+      'user': _conf.user,
+      'passwd': _conf.passwd
+    };
+
+    //test login
+    wpservice.login(opt, function (data, cbdata) {
+      userInfo = null;
+      //登录失败
+      if (data == null || data.status < 0) {
+
+      }
+      //登录成功
+      else {
+        userInfo = data;
+      }
+      mb.window.webContents.send('userinfo', userInfo);
+    });
+
+  });
   ipcMain.on('logoninfo', function (event, arg) {//自定义连接信息
     connectInfo = '已连接 '
     console.log(arg);
@@ -203,10 +263,13 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     //close settingsWin
     ipcMain.emit("closeconf");
 
-    setInterval(callSync, 1000);//设置定时器，3分钟
+    //刷新登录信息
+    ipcMain.emit("refreshuserinfo");
+    //setInterval(callSync, 1000);//设置定时器，3分钟
 
   });
-  //setInterval(callSync, 1000);//设置定时器，3分钟
+
+  setInterval(callSync, 1*60*1000);//设置定时器，3分钟
 
   ipcMain.on('setFileAlert', function (notifypath) { //开始文件监控  
     console.log("set FileAlert.");
@@ -270,7 +333,7 @@ function callSync(filepath) {
       var port = 80;
       if (strs.length == 2) {
         host = strs[0];
-        port = port[1];
+        port = strs[1];
       }
       var opt = {
         'host': host,
@@ -315,7 +378,7 @@ function saveSyncConf(conf) {
   var port = 80;
   if (strs.length == 2) {
     host = strs[0];
-    port = port[1];
+    port = strs[1];
   }
   cliConf["url"] = host;
   cliConf["port"] = port;
@@ -324,9 +387,7 @@ function saveSyncConf(conf) {
   cliConf["mystrategy"] = conf.synctype;
   cliConf["teamstrategy"] = conf.synctype;
   cliConf["interval"] = "10";
-  if (!fs.existsSync(homedir + '/.setting/config.json')) {
-    fs.writeFileSync(homedir + '/.setting/config.json', JSON.stringify(cliConf));
-  }
+  fs.writeFileSync(homedir + '/.setting/config.json', JSON.stringify(cliConf));
 }
 //初始化同步程序目录
 function initSync(conf) {
