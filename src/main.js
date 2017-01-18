@@ -241,7 +241,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     if (_conf.passwd != null && _conf.passwd != "" && (conf.passwd == null || conf.passwd == "")) {
       conf.passwd = _conf.passwd;
     }
-
+    console.log("save conf to :"+__dirname + "/config.json");
 
     //写入配置信息
     fs.writeFileSync(__dirname + "/config.json", JSON.stringify(conf));
