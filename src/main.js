@@ -149,9 +149,10 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     var _conf = getconf();
     console.log(arg);
     //尝试登陆
-    var strs = _conf.wpaddr.split(":");
+
     var host = _conf.wpaddr;
     var port = 80;
+    var strs = _conf.wpaddr.split(":");
     if (strs.length == 2) {
       host = strs[0];
       port = strs[1];
@@ -179,12 +180,14 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     });
 
   });
+
   ipcMain.on('refreshuserinfo', function (event) { //刷新登录用户信息
     var _conf = getconf();
     //登陆
-    var strs = _conf.wpaddr.split(":");
+
     var host = _conf.wpaddr;
     var port = 80;
+    var strs = _conf.wpaddr.split(":");
     if (strs.length == 2) {
       host = strs[0];
       port = strs[1];
@@ -240,7 +243,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     if (_conf.passwd != null && _conf.passwd != "" && (conf.passwd == null || conf.passwd == "")) {
       conf.passwd = _conf.passwd;
     }
-    console.log("save conf to :" + __dirname + "/config.json");
+    //console.log("save conf to :" + __dirname + "/../../config.json");
 
     writeconf(conf);
 
@@ -267,7 +270,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
   });
 
-  setInterval(callSync, 1 * 60 * 1000);//设置定时器，3分钟
+  
 
   ipcMain.on('setFileAlert', function (notifypath) { //开始文件监控  
     console.log("set FileAlert.");
@@ -325,12 +328,15 @@ function callSync(filepath) {
     } else {
       //尝试登陆
 
-      var strs = conf.wpaddr.split(":");
+
       var host = conf.wpaddr;
       var port = 80;
-      if (strs.length == 2) {
-        host = strs[0];
-        port = strs[1];
+      if (conf.wpaddr != null) {
+        var strs = conf.wpaddr.split(":");
+        if (strs.length == 2) {
+          host = strs[0];
+          port = strs[1];
+        }
       }
       var opt = {
         'host': host,
@@ -362,26 +368,36 @@ function callSync(filepath) {
 }
 //获取配置信息
 function getconf() {
-  
-  return JSON.parse(fs.readFileSync(os.homedir + '/jwpconfig.json', 'utf-8'));
+  var confstr;
+  if (fs.existsSync(__dirname + '/../../jwpconfig.json')) {
+    confstr = fs.readFileSync(__dirname + '/../../jwpconfig.json', 'utf-8');
+
+  } else {
+    confstr = '{"localDir":"","passwd":"","synctype":"","user":"","wpaddr":""}';
+  }
+  return JSON.parse(confstr);
 }
+
 function writeconf(conf) {
-  
   //写入配置信息
-  fs.writeFileSync(os.homedir + "/jwpconfig.json", JSON.stringify(conf));
+  fs.writeFileSync(__dirname + '/../../jwpconfig.json', JSON.stringify(conf));
 }
 //保存同步程序的配置信息
 function saveSyncConf(conf) {
 
   var cliConf = {};
   var homedir = conf.localDir + "/" + conf.user;
-  var strs = conf.wpaddr.split(":");
+
   var host = conf.wpaddr;
   var port = 80;
-  if (strs.length == 2) {
-    host = strs[0];
-    port = strs[1];
+  if (conf.wpaddr != null) {
+    var strs = conf.wpaddr.split(":");
+    if (strs.length == 2) {
+      host = strs[0];
+      port = strs[1];
+    }
   }
+
   cliConf["url"] = host;
   cliConf["port"] = port;
   cliConf["un"] = conf.user;
@@ -428,10 +444,13 @@ function initSync(conf) {
 
 //启动同步程序
 function startSync(filepath) {
+  var _conf = getconf();
   //同步过程中停止文件监控
   fileAlert.stop();
   //设置同步状态
   ipcMain.emit("setsyncfinished", false);
   console.log("start sync... ");
-  sync.syncmy(filepath);
+  sync.syncmy(filepath,_conf);
 }
+
+setInterval(callSync, 10 * 1000);//设置定时器，3分钟
