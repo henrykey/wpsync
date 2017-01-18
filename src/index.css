@@ -1,0 +1,123 @@
+/* Variables */
+:root {
+  --background-color: #f5f5f4;
+  --text-color: #333;
+  --window-border-radius: 6px;
+  --font-size: 13px;
+}
+
+/* The arrow at the top of the window */
+.header-arrow {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  margin-left: -5px;
+  height: 10px;
+  width: 10px;
+  transform: rotate(45deg);
+  background-color: #e8e6e8;
+}
+
+.window {
+  position: absolute;
+/*  top: 5px; */
+}
+
+.toolbar {
+  box-shadow: none;
+}
+
+.window, .toolbar-header {
+  border-top-left-radius: var(--window-border-radius);
+  border-top-right-radius: var(--window-border-radius);
+}
+
+.window-content {
+  background-color: var(--background-color);
+}
+
+.column {
+  width: 50%;
+  float: left;
+  margin: auto;
+  margin-top: 16px;
+  text-align: center;
+}
+
+.summary {
+  width: 100%;
+  margin: auto;
+  text-align: center;
+  margin-top: 16px;
+  font-size: var(--font-size);
+  font-weight: 300;
+  color: var(--text-color);
+}
+
+.reading {
+  font-size: calc(var(--font-size) + 6px);
+  font-weight: 300;
+  color: var(--text-color);
+}
+
+.description {
+  text-transform: uppercase;
+  color: #666;
+  font-size: calc(var(--font-size) - 3px);
+  font-weight: 300;
+}
+
+.footer-link {
+  padding-top: 8px;
+  padding-left: 10px;
+  font-size: calc(var(--font-size) - 4px);
+  float: left;
+}
+
+.footer-link a {
+  color: var(--text-color);
+}
+
+.information {
+  border: 1px;
+  padding: 4px;
+  padding-left: 10px;
+  background-color: #e3e3e3;
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size:12px
+}
+.wp-group {
+  border-bottom: grey 1px solid;
+  padding: 10px;
+  background-color: #e3e3e3;
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size:13px
+}
+.group-title {
+  margin-bottom:5px;
+  font-size:13px
+}
+.group-label {
+  font-size:12px;
+  margin-top:0;
+  margin-bottom:3px
+}
+.radio-label {
+  font-size:12px;
+  height: 23px;
+  margin-top:0;
+  margin-bottom:0
+}
+
+.tgroup-setting {
+  display: block
+}
+.tgroup-about {
+  display: none
+}
+hr{
+  align:center;
+  width:100%;
+  color:darkred;
+  size:3
+}

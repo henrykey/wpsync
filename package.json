@@ -1,0 +1,22 @@
+{
+  "name": "wpsync",
+  "version": "0.1.0",
+  "description": "test wp sync",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "electron-packager . wpsync --platform=darwin --arch=x64 --version=0.1.0 --icon=Icon.icns",
+    "start": "electron ."
+  },
+  "author": "Joinkey",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^1.4.13",
+    "form-data": "^2.1.2",
+    "fs.notify": "0.0.4",
+    "menubar": "^5.2.0",
+    "moment": "^2.17.1",
+    "node-schedule": "^1.2.0",
+    "request": "^2.79.0"
+  }
+}
