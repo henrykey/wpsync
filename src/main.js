@@ -21,6 +21,8 @@ var fileAlert = require('./components/jpwnotify');
 let autoLaunch = true
 let iconSetting = 'auto'
 
+//tesing
+
 var fileChangeInfo = '已同步!';//显示文件状态信息
 var userInfo = null;//显示的用户信息
 var settingWin = null;//设置窗口Instance
