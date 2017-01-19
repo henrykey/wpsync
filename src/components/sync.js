@@ -1,16 +1,14 @@
-var mydirpath, teamdirpath, cliConf, conf, homedir, configfile, mydata, mylist, delmylist, downmylist, teamlist, delteamlist, downteamlist, mylogfile, mysyncpath, teamlogfile, teamsyncpath;
+var mydirpath, teamdirpath, cliConf, homedir, configfile, mydata, mylist, delmylist, downmylist, teamlist, delteamlist, downteamlist, mylogfile, mysyncpath, teamlogfile, teamsyncpath;
 var os = require('os');
 var fs = require('fs');
 var Notify = require('fs.notify');
-var schedule = require("node-schedule");
 var moment = require('moment');
 var events = require("events");
 var crypto = require('crypto');
 var wpservice = require('./wpservice');
 var eventsEmitter = new events.EventEmitter();
 module.exports.syncmy = syncmy;
-configfile = './config.json';
-conf = require('../config');
+var cliConf = null;
 eventsEmitter.on('delmyaction', delmyaction);
 eventsEmitter.on('delmycheckfinish', delmycheckfinish);
 eventsEmitter.on('delmyfinish', delmyfinish);
@@ -22,7 +20,7 @@ eventsEmitter.on('downmycheckfinish', downmycheckfinish);
 eventsEmitter.on('downmyfinish', downmyfinish);
 
 var finishEvent = null;
-exports.setFinishEvent=function(cb){
+exports.setFinishEvent = function (cb) {
     finishEvent = cb;
 }
 const electron = require('electron')
@@ -484,19 +482,13 @@ const ipcMain = electron.ipcMain
 //     });
 // }
 
-
-
-
-
-
-
-
-function syncmy(dirpath,conf) {
+function syncmy(dirpath, conf) {
+    cliConf = conf;
+    cliConf = conf;
     mydirpath = dirpath;
-    cliConf = {};
     mydata = {};
     delmylist = new Array();
-    homedir = conf.localDir + "/" + conf.user;
+    homedir = cliConf.localDir;
     var reg = /\\/g;
     homedir = homedir.replace(reg, "/");
     var datestr = moment(new Date()).format("YYYY_MM_DD");
@@ -509,7 +501,6 @@ function syncmy(dirpath,conf) {
     }
     mylogfile = homedir + '/.setting/log/' + yyyy + '/' + datestr + '.log';
 
-    cliConf = require(homedir + '/.setting/config.json');
     mydata = require(homedir + '/.setting/mydata.json');
     mysyncpath = homedir + '/MyFiles';
     if (dirpath != null && dirpath.length > 0) {
@@ -524,27 +515,30 @@ function syncmy(dirpath,conf) {
     };
     wpservice.getroot(opt, function (data) {
         if (data == null || data.status < 0) {
-            fs.appendFileSync(mylogfile, new Date()+' 同步:我的盘库失败！\n', 'utf-8');
+            fs.appendFileSync(mylogfile, new Date() + ' 同步:我的盘库失败！\n', 'utf-8');
+            if (data.status == -8) {
+                ipcMain.emit("connecterr");
+                ipcMain.emit("setsyncfinished", true);
+                return;
+            }
         }
         else {
             if (!fs.existsSync(homedir + '/MyFiles' + '/' + data.protectname)) {
                 fs.mkdirSync(homedir + '/MyFiles' + '/' + data.protectname);
-                states = fs.statSync(homedir + '/MyFiles' + '/' + data.protectname);
                 var obj = new Object();
                 obj.type = 1;
                 obj.name = data.protectname;
-                obj.mtime = states.mtime.getTime();
+                obj.strmd5 = '';
                 obj.smtime = 0;
                 obj.sid = data.protectid;
                 mydata[homedir + '/MyFiles' + '/' + data.protectname] = obj;
             }
             if (!fs.existsSync(homedir + '/MyFiles' + '/' + data.publicname)) {
                 fs.mkdirSync(homedir + '/MyFiles' + '/' + data.publicname);
-                states = fs.statSync(homedir + '/MyFiles' + '/' + data.publicname);
                 var obj = new Object();
                 obj.type = 1;
                 obj.name = data.publicname;
-                obj.mtime = states.mtime.getTime();
+                obj.strmd5 = '';
                 obj.smtime = 0;
                 obj.sid = data.publicid;
                 mydata[homedir + '/MyFiles' + '/' + data.publicname] = obj;
@@ -552,7 +546,7 @@ function syncmy(dirpath,conf) {
             fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
 
             if (fs.existsSync(mysyncpath)) {
-                fs.appendFileSync(mylogfile, new Date()+' 启动同步:' + mysyncpath + '\n', 'utf-8');
+                fs.appendFileSync(mylogfile, new Date() + ' 启动同步:' + mysyncpath + '\n', 'utf-8');
                 opt = {
                     'host': cliConf.url,
                     'port': cliConf.port,
@@ -563,13 +557,44 @@ function syncmy(dirpath,conf) {
                 wpservice.getall2(opt, function (data) {
                     //console.log(data);
                     if (data == null || data.status < 0) {
-                        fs.appendFileSync(mylogfile, new Date()+' 获取:我的盘库列表错误\n', 'utf-8');
-                        fs.appendFileSync(mylogfile, new Date()+' 同步失败！\n', 'utf-8');
+                        fs.appendFileSync(mylogfile, new Date() + ' 获取:我的盘库列表错误\n', 'utf-8');
+                        fs.appendFileSync(mylogfile, new Date() + ' 同步失败！\n', 'utf-8');
+                        if (data.status == -8) {
+                            ipcMain.emit("connecterr");
+                            ipcMain.emit("setsyncfinished", true);
+                            return;
+                        }
                     }
                     else {
                         var datalist = data.list;
                         var datamap = data.map;
-                        fs.appendFileSync(mylogfile, new Date()+' 获取:我的盘库列表成功\n', 'utf-8');
+                        fs.appendFileSync(mylogfile, new Date() + ' 获取:我的盘库列表成功\n', 'utf-8');
+
+                        datalist.forEach(function (element) {
+                            var filepath = homedir + '/MyFiles' + '/' + element.path + element.docname;
+                            if (filepath.indexOf(mysyncpath) > -1) {
+                                if (fs.existsSync(filepath)) {
+                                    var dobj = mydata[filepath];
+                                    if (dobj == null) {
+                                        var obj = new Object();
+                                        obj.type = 2;
+                                        obj.name = element.docname;
+                                        obj.strmd5 = element.md5;
+                                        obj.smtime = element.time;
+                                        obj.sid = element.id;
+                                        mydata[filepath] = obj;
+                                    } else {
+                                        dobj.name = element.docname;
+                                        dobj.smtime = element.time;
+                                        dobj.sid = element.id;
+                                        mydata[filepath] = dobj;
+                                    }
+
+                                }
+                            }
+                        }, this);
+                        fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
+
                         if (cliConf.mystrategy == 1 || cliConf.mystrategy == 2) {
                             for (var key in mydata) {
                                 if (key.indexOf(mysyncpath) > -1) {
@@ -588,8 +613,9 @@ function syncmy(dirpath,conf) {
                         if (cliConf.mystrategy == 1 || cliConf.mystrategy == 3) {
                             for (var key in mydata) {
                                 if (key.indexOf(mysyncpath) > -1) {
-                                    var obj = mydata[key];
-                                    if (!(obj.sid in datamap)) {
+                                    //var obj = mydata[key];
+                                    var filekey = key.replace(homedir + '/MyFiles' + '/', "");
+                                    if (!(filekey in datamap)) {
                                         if (fs.existsSync(key)) {
                                             if (fs.statSync(key).isDirectory()) { // recurse
                                                 deleteFolderRecursive(key);
@@ -602,7 +628,7 @@ function syncmy(dirpath,conf) {
                                 }
                             }
                         }
-                        eventsEmitter.emit('delmyaction', delmylist, data);
+                        eventsEmitter.emit('delmyaction', delmylist);
                     }
                 });
             }
@@ -610,9 +636,9 @@ function syncmy(dirpath,conf) {
     });
 }
 
-function delmyaction(delmylist, alldata) {
+function delmyaction(delmylist) {
     if (delmylist.length == 0) {
-        eventsEmitter.emit('delmyfinish', alldata);
+        eventsEmitter.emit('delmyfinish');
     } else {
         var obj = delmylist[0];
         if (obj.type == -1) {
@@ -625,41 +651,66 @@ function delmyaction(delmylist, alldata) {
             };
             wpservice.deldoc(opt, function (data, key) {
                 if (data == null || data.status < 0) {
-                    fs.appendFileSync(mylogfile, new Date()+' 删除:' + key + '失败!\n', 'utf-8');
+                    fs.appendFileSync(mylogfile, new Date() + ' 删除:' + key + '失败!\n', 'utf-8');
+                    if (data.status == -8) {
+                        ipcMain.emit("connecterr");
+                        ipcMain.emit("setsyncfinished", true);
+                        return;
+                    }
                 } else {
-                    fs.appendFileSync(mylogfile, new Date()+' 删除:' + key + '成功!\n', 'utf-8');
+                    fs.appendFileSync(mylogfile, new Date() + ' 删除:' + key + '成功!\n', 'utf-8');
                 }
                 delmylist.shift();
-                eventsEmitter.emit('delmycheckfinish', delmylist, alldata);
+                eventsEmitter.emit('delmycheckfinish', delmylist);
             }, obj.filepath);
         }
     }
 }
 
-function delmycheckfinish(delmylist, alldata) {
+function delmycheckfinish(delmylist) {
     if (delmylist.length == 0) {
-        eventsEmitter.emit('delmyfinish', alldata);
+        eventsEmitter.emit('delmyfinish');
     } else {
-        eventsEmitter.emit('delmyaction', delmylist, alldata);
+        eventsEmitter.emit('delmyaction', delmylist);
     }
 }
 
-function delmyfinish(alldata) {
+function delmyfinish() {
     fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
-    var parentid = -999;
-    var obj = mydata[mysyncpath];
-    if (obj != null) {
-        parentid = obj.sid;
-    }
-    mylist = new Array();
-    downmylist = new Array();
-    if (cliConf.mystrategy == 1 || cliConf.mystrategy == 2) {
-        mybuildlistup(alldata, mysyncpath, parentid, mylist);
-        eventsEmitter.emit('upmyaction', alldata, mylist);
-    } else if (cliConf.mystrategy == 1 || cliConf.mystrategy == 3) {
-        mybuildlistdown(alldata, downmylist);
-        eventsEmitter.emit('downmyaction', alldata, downmylist);
-    }
+    opt = {
+        'host': cliConf.url,
+        'port': cliConf.port,
+        'user': cliConf.un,
+        'passwd': cliConf.pw,
+        'type': 'personal'
+    };
+    wpservice.getall2(opt, function (data) {
+        if (data == null || data.status < 0) {
+            fs.appendFileSync(mylogfile, new Date() + ' 获取:我的盘库列表错误\n', 'utf-8');
+            fs.appendFileSync(mylogfile, new Date() + ' 同步失败！\n', 'utf-8');
+            if (data.status == -8) {
+                ipcMain.emit("connecterr");
+                ipcMain.emit("setsyncfinished", true);
+                return;
+            }
+        }
+        else {
+            var parentid = -999;
+            var obj = mydata[mysyncpath];
+            if (obj != null) {
+                parentid = obj.sid;
+            }
+            mylist = new Array();
+            downmylist = new Array();
+            if (cliConf.mystrategy == 1 || cliConf.mystrategy == 2) {
+                mybuildlistup(data, mysyncpath, parentid, mylist);
+                eventsEmitter.emit('upmyaction', data, mylist);
+            } else if (cliConf.mystrategy == 1 || cliConf.mystrategy == 3) {
+                mybuildlistdown(data, downmylist);
+                eventsEmitter.emit('downmyaction', data, downmylist);
+            }
+        }
+    });
 }
 
 function downmyaction(alldata, downmylist) {
@@ -678,9 +729,14 @@ function downmyaction(alldata, downmylist) {
             };
             wpservice.download(opt, function (data, aobj) {
                 if (data < 0) {
-                    fs.appendFileSync(mylogfile, new Date()+' 同步:' + aobj.filename + '错误\n', 'utf-8');
+                    fs.appendFileSync(mylogfile, new Date() + ' 同步:' + aobj.filename + '错误\n', 'utf-8');
+                    if (data.status == -8) {
+                        ipcMain.emit("connecterr");
+                        ipcMain.emit("setsyncfinished", true);
+                        return;
+                    }
                 } else {
-                    fs.appendFileSync(mylogfile, new Date()+' 同步:' + aobj.filename + '成功\n', 'utf-8');
+                    fs.appendFileSync(mylogfile, new Date() + ' 同步:' + aobj.filename + '成功\n', 'utf-8');
                     var obj = new Object();
                     obj.type = 2;
                     obj.name = aobj.filename;
@@ -705,9 +761,9 @@ function downmycheckfinish(alldata, downmylist) {
 }
 
 function downmyfinish(alldata) {
-    fs.appendFileSync(mylogfile, new Date()+' 服务器到本地同步完成\n', 'utf-8');
+    fs.appendFileSync(mylogfile, new Date() + ' 服务器到本地同步完成\n', 'utf-8');
     fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
-    ipcMain.emit(finishEvent,true);
+    ipcMain.emit(finishEvent, true);
 }
 
 function upmyaction(alldata, mylist) {
@@ -730,9 +786,14 @@ function upmyaction(alldata, mylist) {
             };
             wpservice.addfolder(opt, function (data, aobj) {
                 if (data == null || data.status < 0) {
-                    fs.appendFileSync(mylogfile, new Date()+' 同步:' + aobj.filepath + '错误\n', 'utf-8');
+                    fs.appendFileSync(mylogfile, new Date() + ' 同步:' + aobj.filepath + '错误\n', 'utf-8');
+                    if (data.status == -8) {
+                        ipcMain.emit("connecterr");
+                        ipcMain.emit("setsyncfinished", true);
+                        return;
+                    }
                 } else {
-                    fs.appendFileSync(mylogfile, new Date()+' 同步:' + aobj.filepath + '成功\n', 'utf-8');
+                    fs.appendFileSync(mylogfile, new Date() + ' 同步:' + aobj.filepath + '成功\n', 'utf-8');
                     var obj = new Object();
                     obj.type = 1;
                     obj.name = aobj.filename;
@@ -755,9 +816,14 @@ function upmyaction(alldata, mylist) {
             };
             wpservice.upload(opt, function (data, aobj) {
                 if (data == null || data.status < 0) {
-                    fs.appendFileSync(mylogfile, new Date()+' 同步:' + aobj.filepath + '错误\n', 'utf-8');
+                    fs.appendFileSync(mylogfile, new Date() + ' 同步:' + aobj.filepath + '错误\n', 'utf-8');
+                    if (data.status == -8) {
+                        ipcMain.emit("connecterr");
+                        ipcMain.emit("setsyncfinished", true);
+                        return;
+                    }
                 } else {
-                    fs.appendFileSync(mylogfile, new Date()+' 同步:' + aobj.filepath + '成功\n', 'utf-8');
+                    fs.appendFileSync(mylogfile, new Date() + ' 同步:' + aobj.filepath + '成功\n', 'utf-8');
                     var obj = new Object();
                     obj.type = 2;
                     obj.name = aobj.filename;
@@ -780,9 +846,14 @@ function upmyaction(alldata, mylist) {
             };
             wpservice.uploadhistory(opt, function (data, aobj) {
                 if (data == null || data.status < 0) {
-                    fs.appendFileSync(mylogfile, new Date()+' 同步:' + aobj.filepath + '错误\n', 'utf-8');
+                    fs.appendFileSync(mylogfile, new Date() + ' 同步:' + aobj.filepath + '错误\n', 'utf-8');
+                    if (data.status == -8) {
+                        ipcMain.emit("connecterr");
+                        ipcMain.emit("setsyncfinished", true);
+                        return;
+                    }
                 } else {
-                    fs.appendFileSync(mylogfile, new Date()+' 同步:' + aobj.filepath + '成功\n', 'utf-8');
+                    fs.appendFileSync(mylogfile, new Date() + ' 同步:' + aobj.filepath + '成功\n', 'utf-8');
                     var obj = new Object();
                     obj.type = 2;
                     obj.name = aobj.filename;
@@ -807,14 +878,14 @@ function upmycheckfinish(alldata, mylist) {
 }
 
 function upmyfinish(alldata) {
-    fs.appendFileSync(mylogfile, new Date()+' 本地到服务器同步完成\n', 'utf-8');
+    fs.appendFileSync(mylogfile, new Date() + ' 本地到服务器同步完成\n', 'utf-8');
     fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
     downmylist = new Array();
     if (cliConf.mystrategy == 1 || cliConf.mystrategy == 3) {
         mybuildlistdown(alldata, downmylist);
         eventsEmitter.emit('downmyaction', alldata, downmylist);
-    }else{
-        ipcMain.emit(finishEvent,true);
+    } else {
+        ipcMain.emit(finishEvent, true);
     }
 }
 
@@ -825,7 +896,6 @@ function mybuildlistdown(alldata, downmylist) {
             if (element.doctype == 1) {
                 if (!fs.existsSync(filepath)) {
                     fs.mkdirSync(filepath);
-                    states = fs.statSync(filepath);
                     var obj = new Object();
                     obj.type = 1;
                     obj.name = element.docname;
@@ -855,7 +925,8 @@ function mybuildlistdown(alldata, downmylist) {
                         aobj.smtime = element.time;
                         downmylist.push(aobj);
                     } else {
-                        if (obj.smtime != element.time) {
+                        var strmd5 = getfilemd5(filepath);
+                        if (obj.strmd5 != strmd5) {
                             var aobj = new Object();
                             aobj.type = 1;
                             aobj.filename = element.docname;
@@ -908,7 +979,8 @@ function mybuildlistup(alldata, pathstr, parentid, mylist) {
                 if (!states.isDirectory()) {
                     var strmd5 = getfilemd5(filepath);
                     if (obj.strmd5 != strmd5) {
-                        var stime = datamap[obj.sid].time;
+                        var filekey = filepath.replace(homedir + '/MyFiles' + '/', "");
+                        var stime = datamap[filekey].time;
                         if (states.mtime.getTime() > stime) {
                             var aobj = new Object();
                             aobj.type = 2;

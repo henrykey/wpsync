@@ -125,3 +125,34 @@ hr{
 .jkhead{
   background-color: RGB(25,102,255)  
 }
+
+#navsite { 
+    padding: 0; 
+    background-color: #fff; 
+} 
+#navsite ul { 
+    list-style: none; 
+    margin: 0; 
+    padding: 0; 
+} 
+#navsite ul li { 
+    height:40px;
+    margin: 0; 
+} 
+#navsite ul li a { 
+    padding-left: 10px;
+    display: block; 
+    text-decoration: none; 
+    width: 100%; 
+} 
+#navsite ul li a {
+    line-height: 40px;
+    height:40px;
+    width: auto; 
+}
+#navsite ul li a i {
+    padding-right: 10px;
+}
+#navsite ul li a:hover { 
+    background-color: #ccc; 
+} 

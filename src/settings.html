@@ -16,7 +16,7 @@
       _conf = conf;
       $("#user").val(_conf.user);
       $("#localDir").val(_conf.localDir);
-      $("#wpaddr").val(_conf.wpaddr);
+      $("#wpaddr").val(_conf.host!=null&&_conf.host!=""?(_conf.host + (_conf.port != null && _conf.port != "" ? (":" + _conf.port) : "")):"");
       $("input[name=synctype][value=" + _conf.synctype + "]").prop("checked", "checked");
       //$("input[name=synctype][value="+conf.synctype+"]").;
 
@@ -29,33 +29,40 @@
       ipcRenderer.send('getconf', 'getconf...');
     });
     function saveconfig() {
-       _conf.user=$("#user").val();
-       _conf.passwd=$("#passwd").val();
-       _conf.synctype=$("input[name=synctype]:checked").val();
-       _conf.localDir=$("#localDir").val();
-       _conf.wpaddr=$("#wpaddr").val();      
+      _conf.user = $("#user").val();
+      _conf.passwd = $("#passwd").val();
+      _conf.synctype = $("input[name=synctype]:checked").val();
+      _conf.localDir = $("#localDir").val();
+      var wpaddr = $("#wpaddr").val();
+      _conf.host = wpaddr;
+      _conf.port = 80;
+      if (wpaddr != null) {
+        var strs = wpaddr.split(":");
+        if (strs.length == 2) {
+          _conf.host = strs[0];
+          _conf.port = strs[1];
+        }
+      }
       ipcRenderer.send('saveconf', _conf);
     };
-    function closewin(){
+    function closewin() {
       ipcRenderer.send('closeconf');
     }
   </script>
 </head>
 
 <body>
-    <div class="window">
-      <header class="toolbar toolbar-header">
-        <h1 class="title">智汇仓设置</h1>
-      </header>
+  <div class="window">
+    <header class="toolbar toolbar-header">
+      <h1 class="title">智汇仓设置</h1>
+    </header>
 
     <div class="tab-group">
       <div class="tab-item active">
-        <span class="icon icon-cancel icon-close-tab"></span>
-        设置
+        <span class="icon icon-cancel icon-close-tab"></span> 设置
       </div>
       <div class="tab-item">
-        <span class="icon icon-cancel icon-close-tab"></span>
-        关于
+        <span class="icon icon-cancel icon-close-tab"></span> 关于
       </div>
     </div>
     <form class="tgroup-setting">
@@ -63,11 +70,11 @@
         <div class="group-title"><strong>用户信息</strong></div>
         <div class="form-group group-label">
           <span>账号</span>
-          <input style="width:70%;padding:0px" class="form-control" id="user" >
+          <input style="width:70%;padding:0px" class="form-control" placeholder="请输入账号" id="user" >
 </div>
 <div class="form-group group-label">
   <span>密码</span>
-  <input style="width:70%;padding:0px" type="password" class="form-control" placeholder="Password" id="passwd">
+  <input style="width:70%;padding:0px" type="password" class="form-control" placeholder="请输入密码" id="passwd">
 </div>
 </div>
 <div class="wp-group">

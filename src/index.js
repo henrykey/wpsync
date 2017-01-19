@@ -11,6 +11,10 @@ document.addEventListener('click', (event) => {
   } else if (event.target.classList.contains('js-quit')) {
     ipcRenderer.send('quit', 'quit');
     window.close();
+  } else if (event.target.classList.contains('openfolder')) {
+    ipcRenderer.send('openfolder');
+  } else if (event.target.classList.contains('opencloud')) {
+    ipcRenderer.send('opencloud');
   }
 })
 

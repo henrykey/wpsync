@@ -1,3 +1,6 @@
+const electron = require('electron')
+const ipcMain = electron.ipcMain
+
 function httppost(options, postData, callback, cbdata) {
     var http = require('http');
     var retdata;
@@ -8,8 +11,10 @@ function httppost(options, postData, callback, cbdata) {
         res.on('end', () => {
             try {
                 if (rawData != "") {
-                    //console.log(rawData);   
-                    retdata = JSON.parse(rawData);
+                    //console.log(rawData);
+                    //将返回内容进行base64解码
+                    var b64 = new Buffer(rawData, "base64").toString();
+                    retdata = JSON.parse(b64);
                     //console.log(retdata);                    
                 }
             } catch (e) {
@@ -21,7 +26,8 @@ function httppost(options, postData, callback, cbdata) {
     });
     req.on('error', (e) => {
         console.log(`problem with request: ${e.message}`);
-        callback(null,cbdata);
+        //连接失败
+        callback({status:'-8'}, cbdata);
     });
     req.write(postData + "&authtime=" + new Date().getTime());
     req.end();
@@ -41,7 +47,9 @@ function httpmultipart(options, fileKeyValue, callback, cbdata) {
         res.on('end', () => {
             try {
                 if (rawData != "") {
-                    retdata = JSON.parse(rawData);
+                    //将返回内容进行base64解码
+                    var b64 = new Buffer(rawData, "base64").toString();
+                    retdata = JSON.parse(b64);
                     //console.log(retdata);
 
                 }
@@ -54,7 +62,8 @@ function httpmultipart(options, fileKeyValue, callback, cbdata) {
     });
     req.on('error', (e) => {
         console.log(`problem with request: ${e.message}`);
-        callback(null,cbdata);
+        //连接失败
+        callback({status:'-8'}, cbdata);
     });
     var boundaryKey = Math.random().toString(16);
     var enddata = '\r\n----' + boundaryKey + '--';
@@ -249,7 +258,8 @@ function httpdownload(options, postData, filepath, callback, cbdata) {
     });
     req.on('error', (e) => {
         console.log(`problem with request: ${e.message}`);
-        callback(null,cbdata);
+        //连接失败
+        callback({status:'-8'}, cbdata);
     });
     req.write(postData + "&authtime=" + new Date().getTime());
     req.end();
