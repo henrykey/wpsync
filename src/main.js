@@ -101,10 +101,13 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   ipcMain.on('openfolder', (event) => {//自定义按退出键
     //alert('openfolder');
     console.log('openfolder');
+    electron.shell.openItem('/Users/kehongwei/txt');
   });
   ipcMain.on('opencloud', (event) => {//自定义按退出键
+    var _conf = getconf();
+    electron.shell.openExternal('http://' + _conf.host + ':' + _conf.port);
     //alert('opencloud');
-    console.log('opencloud');
+    console.log('opencloud ' + _conf.host);
   });
 
   ipcMain.on('quit', (event, arg) => {//自定义按退出键
