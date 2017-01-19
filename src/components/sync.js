@@ -491,7 +491,7 @@ const ipcMain = electron.ipcMain
 
 
 
-function syncmy(dirpath) {
+function syncmy(dirpath,conf) {
     mydirpath = dirpath;
     cliConf = {};
     mydata = {};

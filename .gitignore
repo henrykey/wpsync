@@ -1,5 +1,4 @@
-node_modules
-bower_components
-dist
-compile
-.idea
+/node_modules
+/dist
+/compile
+/.DS_Store
