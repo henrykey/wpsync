@@ -439,4 +439,4 @@ function startSync(filepath,conf) {//启动同步程序
   
 }
 
-setInterval(callSync, 10 * 1000);//设置定时器，3分钟
+setInterval(callSync, 3 * 60 * 1000);//设置定时器，3分钟
