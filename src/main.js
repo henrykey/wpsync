@@ -12,7 +12,8 @@ const ipcRender = electron.ipcRenderer;
 //加载同步模块
 var sync = require('./components/sync');
 //设置同步完成后的回调事件
-sync.setFinishEvent('setsyncfinished');
+sync.setmyFinishEvent('setsyncmyfinished');
+sync.setteamFinishEvent('setsyncteamfinished');
 //加载wp服务模块
 var wpservice = require('./components/wpservice');
 //加载文件变的监控模块
@@ -144,7 +145,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     //event.sender.send('userinfo', userInfo);//将信息发送至窗体
   });
 
-  ipcMain.on('setsyncfinished', function (arg) { //设置同步完成状态
+  ipcMain.on('setsyncmyfinished', function (arg) { //设置同步完成状态
     syncfinished = arg;
     var _conf = getconf();
     //同步完成，启动文件监控
@@ -153,8 +154,8 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       ipcMain.emit("setFileAlert", _conf.localDir + "/" + _conf.user + "/MyFiles");
 
     }
-    mb.window.webContents.send('setsyncfinished', arg);
-    console.log("set syncfinished:" + arg);
+    mb.window.webContents.send('setsyncmyfinished', arg);
+    console.log("set syncmyfinished:" + arg);
     ipcMain.emit("refreshuserinfo");
   });
 
@@ -430,7 +431,7 @@ function startSync(filepath,conf) {//启动同步程序
   //同步过程中停止文件监控
   fileAlert.stop();
   //设置同步状态
-  ipcMain.emit("setsyncfinished", false);
+  ipcMain.emit("setsyncmyfinished", false);
   console.log("start sync... ");
   try{
     initSyncFolder(conf);
