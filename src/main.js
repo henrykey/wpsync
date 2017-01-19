@@ -30,7 +30,7 @@ var connectInfo = null; //连接信息
 var fs = require('fs');
 var os = require('os');
 
-
+var defaultSyncFolder = "jwp";//默认同步目录名称
 
 
 // Quit when all windows are closed.
@@ -98,6 +98,15 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     console.log('get focus...');
   })
 
+  ipcMain.on('openfolder', (event) => {//自定义按退出键
+    //alert('openfolder');
+    console.log('openfolder');
+  });
+  ipcMain.on('opencloud', (event) => {//自定义按退出键
+    //alert('opencloud');
+    console.log('opencloud');
+  });
+
   ipcMain.on('quit', (event, arg) => {//自定义按退出键
     app.quit();
     console.log(arg);
@@ -143,23 +152,16 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     }
     mb.window.webContents.send('setsyncfinished', arg);
     console.log("set syncfinished:" + arg);
+    ipcMain.emit("refreshuserinfo");
   });
 
   ipcMain.on('userinfo', function (event, arg) { //自定义获取用户信息
     var _conf = getconf();
     console.log(arg);
     //尝试登陆
-
-    var host = _conf.wpaddr;
-    var port = 80;
-    var strs = _conf.wpaddr.split(":");
-    if (strs.length == 2) {
-      host = strs[0];
-      port = strs[1];
-    }
     var opt = {
-      'host': host,
-      'port': port,
+      'host': _conf.host,
+      'port': _conf.port,
       'user': _conf.user,
       'passwd': _conf.passwd
     };
@@ -183,18 +185,10 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
   ipcMain.on('refreshuserinfo', function (event) { //刷新登录用户信息
     var _conf = getconf();
-    //登陆
-
-    var host = _conf.wpaddr;
-    var port = 80;
-    var strs = _conf.wpaddr.split(":");
-    if (strs.length == 2) {
-      host = strs[0];
-      port = strs[1];
-    }
+    //登陆   
     var opt = {
-      'host': host,
-      'port': port,
+      'host': _conf.host,
+      'port': _conf.port,
       'user': _conf.user,
       'passwd': _conf.passwd
     };
@@ -221,19 +215,15 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   });
 
   ipcMain.on('getconf', function (event, arg) { //读取config信息
-    //console.log(__dirname + '/config.json');
-    //var conf = require(__dirname + '/config');
     var conf = getconf();
-    //console.log(conf);
     //默认同步目录
     if (conf.localDir == null || conf.localDir == "") {
-      conf.localDir = os.homedir() + '/jwp';
+      conf.localDir = os.homedir() ;
     }
     //默认同步模式
     if (conf.synctype == null || conf.synctype == "") {
       conf.synctype = "1";
     }
-
     event.sender.send('getconf', conf);//将信息发送至窗体
   });
 
@@ -250,15 +240,12 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     //同步目录改变
     if (_conf.localDir != conf.localDir) {
       //初始化同步目录
-      initSync(conf);
+      initSyncFolder(conf);
     }
     else if (!fs.existsSync(conf.localDir + "/" + conf.user)) {
       //初始化同步目录
-      initSync(conf);
-    }
-
-    //将配置信息写入到同步目录的setting下
-    saveSyncConf(conf);
+      initSyncFolder(conf);
+    }    
 
     event.sender.send('saveconf', "save conf ok");//将信息发送至窗体
     //close settingsWin
@@ -270,7 +257,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
   });
 
-  
+
 
   ipcMain.on('setFileAlert', function (notifypath) { //开始文件监控  
     console.log("set FileAlert.");
@@ -293,7 +280,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
         fileChangeInfo = '有文件被改变！'; //更新文件状态信息
         //将文件路径中的"\"替换为"/"
         path = path.replace(/\\/g, "/");
-
+        console.log("fileAlert:" + path);
         //调用同步程序
         callSync(path);
         mb.window.webContents.send('file-change-notify', fileChangeInfo);//发送文件状态信息至窗体
@@ -301,6 +288,13 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       fileAlert.start();
     }
   });
+
+  ipcMain.on('connecterr', function (event, err) { //连接服务器失败
+    console.log("connect error:"+err);    
+    ipcMain.emit("refreshuserinfo");//断开用户连接
+    
+  });
+
 });
 
 
@@ -313,8 +307,8 @@ function callSync(filepath) {
   if (conf.user == null || conf.user == "" || conf.passwd == null || conf.passwd == "") {
     message = "user or passwd not set.";
     error = -1;
-  } else if (conf.wpaddr == null || conf.wpaddr == "") {
-    message = "wpaddr not set.";
+  } else if (conf.host == null || conf.host == ""||conf.port == null || conf.port == "") {
+    message = "host or port not set.";
     error = -2;
   } else if (conf.localDir == null || conf.localDir == "") {
     message = "localDir not set.";
@@ -322,25 +316,14 @@ function callSync(filepath) {
   } else {
     //检查同步目录是否存在
 
-    if (!fs.existsSync(conf.localDir)) {
-      message = "localDir:" + conf.localDir + " is not exists";
+    if (!fs.existsSync(conf.localDir+"/"+defaultSyncFolder)) {
+      message = "localDir:" + conf.localDir+"/"+defaultSyncFolder + " is not exists";
       error = -4;
     } else {
       //尝试登陆
-
-
-      var host = conf.wpaddr;
-      var port = 80;
-      if (conf.wpaddr != null) {
-        var strs = conf.wpaddr.split(":");
-        if (strs.length == 2) {
-          host = strs[0];
-          port = strs[1];
-        }
-      }
       var opt = {
-        'host': host,
-        'port': port,
+        'host': conf.host,
+        'port': conf.port,
         'user': conf.user,
         'passwd': conf.passwd
 
@@ -355,7 +338,7 @@ function callSync(filepath) {
         else {
 
           if (syncfinished) {
-            startSync(filepath);
+            startSync(filepath,conf);
           }
         }
       });
@@ -373,53 +356,42 @@ function getconf() {
     confstr = fs.readFileSync(__dirname + '/../../jwpconfig.json', 'utf-8');
 
   } else {
-    confstr = '{"localDir":"","passwd":"","synctype":"","user":"","wpaddr":""}';
+    confstr = '{"localDir":"","passwd":"","synctype":"","user":"","host":"","port":""}';
   }
-  return JSON.parse(confstr);
+  var conf = JSON.parse(confstr);
+  
+  return conf;
 }
 
 function writeconf(conf) {
   //写入配置信息
   fs.writeFileSync(__dirname + '/../../jwpconfig.json', JSON.stringify(conf));
 }
-//保存同步程序的配置信息
-function saveSyncConf(conf) {
 
-  var cliConf = {};
-  var homedir = conf.localDir + "/" + conf.user;
 
-  var host = conf.wpaddr;
-  var port = 80;
-  if (conf.wpaddr != null) {
-    var strs = conf.wpaddr.split(":");
-    if (strs.length == 2) {
-      host = strs[0];
-      port = strs[1];
-    }
-  }
-
-  cliConf["url"] = host;
-  cliConf["port"] = port;
-  cliConf["un"] = conf.user;
-  cliConf["pw"] = conf.passwd;
-  cliConf["mystrategy"] = conf.synctype;
-  cliConf["teamstrategy"] = conf.synctype;
-  cliConf["interval"] = "10";
-  fs.writeFileSync(homedir + '/.setting/config.json', JSON.stringify(cliConf));
-}
 //初始化同步程序目录
-function initSync(conf) {
+function initSyncFolder(conf) {
 
   var homedir = conf.localDir;
   var mydata = {};
   var teamdata = {};
+  //同步目录不存在
   if (!fs.existsSync(conf.localDir)) {
-    fs.mkdirSync(conf.localDir);
+    return ;
   }
-  if (!fs.existsSync(conf.localDir + "/" + conf.user)) {
-    fs.mkdirSync(conf.localDir + "/" + conf.user);
+  //用户未指定
+  if (conf.user == null || conf.user == "") {
+    return ;
   }
-  homedir = conf.localDir + "/" + conf.user;
+
+  if (conf.host == null || conf.host == "") {
+    return ;
+  }
+  
+  if (!fs.existsSync(conf.localDir + "/" + defaultSyncFolder)) {
+    fs.mkdirSync(conf.localDir + "/" + defaultSyncFolder);
+  }
+  homedir = conf.localDir + "/" + defaultSyncFolder;
   if (!fs.existsSync(homedir + '/MyFiles')) {
     fs.mkdirSync(homedir + '/MyFiles');
   }
@@ -432,8 +404,7 @@ function initSync(conf) {
   if (!fs.existsSync(homedir + '/.setting/log')) {
     fs.mkdirSync(homedir + '/.setting/log');
   }
-  //保存conf信息
-  saveSyncConf(conf);
+
   if (!fs.existsSync(homedir + '/.setting/mydata.json')) {
     fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
   }
@@ -442,15 +413,30 @@ function initSync(conf) {
   }
 }
 
-//启动同步程序
-function startSync(filepath) {
-  var _conf = getconf();
+
+function startSync(filepath,conf) {//启动同步程序
+  var syncConf = {url:'',port:'',un:'',pw:'',localDir:'',mystrategy:'',teamstrategy:''};
+  syncConf.url = conf.host;
+  syncConf.port = conf.port;
+  syncConf.un = conf.user;
+  syncConf.pw = conf.passwd;
+  syncConf.localDir = conf.localDir+"/"+defaultSyncFolder;
+  syncConf.mystrategy = conf.synctype;
+  syncConf.teamstrategy = conf.synctype;
+
   //同步过程中停止文件监控
   fileAlert.stop();
   //设置同步状态
   ipcMain.emit("setsyncfinished", false);
   console.log("start sync... ");
-  sync.syncmy(filepath,_conf);
+  try{
+    initSyncFolder(conf);
+    //开始同步
+    sync.syncmy(filepath, syncConf);  
+  }catch(e){
+    console.log(e);
+  }
+  
 }
 
 setInterval(callSync, 10 * 1000);//设置定时器，3分钟

@@ -15,20 +15,16 @@
     </div>
     <div class="information "><span class="js-spaceused">&nbsp;</span></div>
 
-    <div>
-    <ul class="list-group">
-      <li class="list-group-item">
-        <div class="icon icon-folder">
-          <strong>打开本地文件夹</strong>
-        </div>
+    <div id="navsite">
+    <ul>
+      <li>
+          <a class="openfolder"><i class="icon icon-folder"></i>打开本地文件夹</a>
       </li>
-      <li class="list-group-item" onclick="javascript:openweb();">
-        <div class="icon icon-cloud">
-          <strong>访问云端</strong>
-        </div>
+      <li>
+          <a class="opencloud"><i class="icon icon-cloud"></i>访问云端</a>
       </li>
     </ul>
-
+    </div>
 
     <footer class="toolbar toolbar-footer">
       <div class="toolbar-actions">
@@ -43,14 +39,5 @@
     </footer>
   </div>
 </body>
-<script  charset="utf-8">require('./index')</script>
-<script>
-
-function openweb(){
-  //alert(1);
-  //shell.openExternal('http://192.168.123.49:1800');
-  //aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-};
-
-</script>
+<script charset="utf-8">require('./index')</script>
 </html>
