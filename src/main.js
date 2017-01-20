@@ -102,7 +102,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     //alert('openfolder');
     var _conf = getconf();
     //console.log('openfolder');
-    electron.shell.openItem(_conf.localDir);
+    electron.shell.openItem(_conf.localDir+"/"+defaultSyncFolder);
   });
   ipcMain.on('opencloud', (event) => {//自定义按退出键
     var _conf = getconf();
