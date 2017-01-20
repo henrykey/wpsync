@@ -137,6 +137,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   });
 
   ipcMain.on('closeconf', function (event, arg) { //关闭/销毁设置页面
+    
     if (settingWin != null) {
       settingWin.close();
       settingWin = null;
@@ -221,7 +222,12 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     event.sender.send('getconf', conf);//将信息发送至窗体
   });
 
-  ipcMain.on('saveconf', function (event, conf) { //保存config信息       
+  ipcMain.on('saveconf', function (event, conf) { //保存config信息  
+    //检查目录是否存在
+    if(!fs.existsSync(conf.localDir)){
+      event.sender.send('alertmessage', "目录:"+conf.localDir+"不存在，请选择其他目录。");//将信息发送至窗体
+      return;
+    }     
     var _conf = getconf();
     //密码未改变
     if (_conf.passwd != null && _conf.passwd != "" && (conf.passwd == null || conf.passwd == "")) {
@@ -362,7 +368,11 @@ function callSyncMy(filepath) {
       }
       //登录成功，准备启动同步
       else {
-        startSyncMy(filepath, conf);
+        try{
+          startSyncMy(filepath, conf);
+        }catch(e){
+          ipcMain.emit("log", e);
+        }
       }
     });
   }
@@ -466,7 +476,12 @@ function callSyncTeam(filepath) {
       }
       //登录成功，准备启动同步
       else {
-        startSyncTeam(filepath, conf);
+        try{
+          startSyncTeam(filepath, conf);
+        }catch(e){
+          ipcMain.emit("log", e);
+        }
+        
       }
     });
   }
@@ -583,8 +598,8 @@ function timerefreshuserinfo() {
   ipcMain.emit("refreshuserinfo");
 }
 
-setInterval(callSyncMy, 180 * 1000);//设置定时器-同步我的盘库，3分钟
+setInterval(callSyncMy, 3*60 * 1000);//设置定时器-同步我的盘库，3分钟
 
-setInterval(callSyncTeam, 180 * 1000);//设置定时器-同步工作组盘库，3分钟
+setInterval(callSyncTeam, 3*60 * 1000);//设置定时器-同步工作组盘库，3分钟
 
-setInterval(timerefreshuserinfo, 600 * 1000);//设置定时器-刷新登录，10分钟
+setInterval(timerefreshuserinfo, 10*60 * 1000);//设置定时器-刷新登录，10分钟
