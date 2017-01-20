@@ -15,7 +15,7 @@
     "build:mywin": "build --win",
     "build:mywin32": "build --win --ia32",
     "build:winsetup": "electron-installer-windows --src dist/$npm_package_productName --dest dist/installers/",
-    "build:win": "electron-packager . $npm_package_productName --out=dist --arch=x64 --platform=win32 --ignore='^/dist$' --prune --asar --overwrite --icon=./img/icons/icon.ico --version=$npm_package_electronVersion --app-version=$npm_package_version",
+    "build:win": "electron-packager . $npm_package_productName --out=dist --arch=all --platform=win32 --ignore='^/dist$' --prune --asar --overwrite --icon=./img/icons/icon.ico --version=$npm_package_electronVersion --app-version=$npm_package_version",
     "build:linux": "electron-packager . $npm_package_productName --out=dist --arch=all --platform=linux --ignore='^/dist$' --prune --asar --overwrite --icon=./assets/app.png --version=$npm_package_electronVersion --app-version=$npm_package_version",
     "package": "npm run package:win32 && npm run package:win64 && npm run package:osx && npm run package:linux",
     "package:win64": "electron-builder dist/wpsync-win32-x64/ --platform=win --out=dist --config=config.json && mv 'dist/wpsync Setup.exe' dist/wpsync_Windows64.exe",
@@ -61,7 +61,6 @@
     "menubar": "^5.2.0",
     "moment": "^2.17.1",
     "node-schedule": "^1.2.0",
-    "electron-windows-inno-installer": "^0.3.26",
     "request": "^2.79.0"
   },
   "devDependencies": {
@@ -71,6 +70,7 @@
     "electron-installer-dmg": "0.1.2",
     "electron-installer-windows": "^0.2.0",
     "electron-packager": "^8.5.0",
+    "electron-windows-inno-installer": "^0.3.26",
     "standard": "^8.3.0"
   }
 }
