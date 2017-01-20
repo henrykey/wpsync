@@ -102,7 +102,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     //alert('openfolder');
     var _conf = getconf();
     //console.log('openfolder');
-    electron.shell.openItem(_conf.localDir);
+    electron.shell.openItem(_conf.localDir+"/"+defaultSyncFolder);
   });
   ipcMain.on('opencloud', (event) => {//自定义按退出键
     var _conf = getconf();
@@ -289,29 +289,31 @@ ipcMain.on('setMyFileAlert', function (notifypath) { //开始文件监控
     }
   }
   if (fs.existsSync(notifypath)) {
-    myFileAlert.stop();
+    
     myFileAlert.clearFolders();
     //遍历子目录
     var filelist = require('./components/getAllFolder').getAllFiles(notifypath, false);
 
+    
     //加入需监控的目录
     filelist.forEach(function (file) {
-      //ipcMain.emit("log", file);
+      //ipcMain.emit("log", "MyFileAlert addFolder:"+file);
       myFileAlert.addFolder(file);
     });
-
+    
+    
     //注册回调函数
-    myFileAlert.setNotify(function (file, event, path) {
+    myFileAlert.start(function (file, event, path) {
       var msg = file + ' ' + event + ' in ' + path; //测试信息
+      ipcMain.emit("log",msg);
       fileChangeInfo = '有文件被改变！'; //更新文件状态信息
       //将文件路径中的"\"替换为"/"
       path = path.replace(/\\/g, "/");
-      ipcMain.emit("log", "myFileAlert:" + path);
+      //ipcMain.emit("log", "myFileAlert:" + path);
       //调用同步程序
       callSyncMy(path);
-      mb.window.webContents.send('file-change-notify', fileChangeInfo);//发送文件状态信息至窗体
+      //mb.window.webContents.send('file-change-notify', fileChangeInfo);//发送文件状态信息至窗体
     });
-    myFileAlert.start();
   }
 });
 function startSyncMy(filepath, conf) {//启动同步程序
@@ -327,7 +329,7 @@ function startSyncMy(filepath, conf) {//启动同步程序
   syncConf.teamstrategy = conf.synctype;
 
   //同步过程中停止文件监控
-  myFileAlert.stop();
+  myFileAlert.close();
   //设置同步状态
   ipcMain.emit("setsyncmyfinished", false);
   ipcMain.emit("log", "start sync my... ");
@@ -394,7 +396,6 @@ ipcMain.on('setTeamFileAlert', function (notifypath) { //开始文件监控
     }
   }
   if (fs.existsSync(notifypath)) {
-    teamFileAlert.stop();
     teamFileAlert.clearFolders();
     //遍历子目录
     var filelist = require('./components/getAllFolder').getAllFiles(notifypath, false);
@@ -406,7 +407,7 @@ ipcMain.on('setTeamFileAlert', function (notifypath) { //开始文件监控
     });
 
     //注册回调函数
-    teamFileAlert.setNotify(function (file, event, path) {
+    teamFileAlert.start(function (file, event, path) {
       var msg = file + ' ' + event + ' in ' + path; //测试信息
       fileChangeInfo = '有文件被改变！'; //更新文件状态信息
       //将文件路径中的"\"替换为"/"
@@ -416,7 +417,7 @@ ipcMain.on('setTeamFileAlert', function (notifypath) { //开始文件监控
       callSyncTeam(path);
       mb.window.webContents.send('file-change-notify', fileChangeInfo);//发送文件状态信息至窗体
     });
-    teamFileAlert.start();
+    
   }
 });
 function startSyncTeam(filepath, conf) {//启动同步程序
@@ -432,7 +433,7 @@ function startSyncTeam(filepath, conf) {//启动同步程序
   syncConf.teamstrategy = conf.synctype;
 
   //同步过程中停止文件监控
-  teamFileAlert.stop();
+  teamFileAlert.close();
   //设置同步状态
   ipcMain.emit("setsyncteamfinished", false);
   ipcMain.emit("log", "start sync team... ");
