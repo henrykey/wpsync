@@ -1,4 +1,4 @@
-var mydirpath, teamdirpath, cliConf, homedir, configfile, mydata, mylist, delmylist, downmylist, teamlist, delteamlist, downteamlist, mylogfile, mysyncpath, teamlogfile, teamsyncpath;
+var mydirpath, teamdirpath, cliConf, homedir, configfile, mydata,teamdata,mylist, teamlist,delmylist, delteamlist, downmylist, downteamlist, mylogfile, teamlogfile, mysyncpath, teamsyncpath;
 var os = require('os');
 var fs = require('fs');
 var Notify = require('fs.notify');
@@ -310,7 +310,7 @@ function downteamaction(alldata, downteamlist) {
                     var obj = new Object();
                     obj.type = 2;
                     obj.name = aobj.filename;
-                    obj.strmd5 = getfilemd5(aobj.filepath);
+                    obj.strmd5 = aobj.strmd5;
                     obj.smtime = aobj.smtime;
                     obj.sid = aobj.sid;
                     teamdata[aobj.filepath] = obj;
@@ -486,6 +486,7 @@ function teambuildlistdown(alldata, downteamlist) {
                     downteamlist.push(aobj);
                 } else {
                     var obj = teamdata[filepath];
+                    var strmd5 = getfilemd5(filepath);
                     if (obj == null) {
                         var aobj = new Object();
                         aobj.type = 1;
@@ -493,9 +494,10 @@ function teambuildlistdown(alldata, downteamlist) {
                         aobj.sid = element.id;
                         aobj.filepath = filepath;
                         aobj.smtime = element.time;
+                        aobj.strmd5 = strmd5;
                         downteamlist.push(aobj);
                     } else {
-                        var strmd5 = getfilemd5(filepath);
+                        //console.log(filepath+':'+strmd5);
                         if (obj.strmd5 != strmd5) {
                             var aobj = new Object();
                             aobj.type = 1;
@@ -503,6 +505,7 @@ function teambuildlistdown(alldata, downteamlist) {
                             aobj.sid = element.id;
                             aobj.filepath = filepath;
                             aobj.smtime = element.time;
+                            aobj.strmd5 = strmd5;
                             downteamlist.push(aobj);
                         }
                     }
