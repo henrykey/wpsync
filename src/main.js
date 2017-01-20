@@ -274,7 +274,7 @@ ipcMain.on('setsyncmyfinished', function (arg) { //设置我的盘库同步完�
   if (syncmyfinished) {
     ipcMain.emit("setMyFileAlert", _conf.localDir + "/" + defaultSyncFolder + "/MyFiles");
   }
-  mb.window.webContents.send('setsyncmyfinished', arg);
+  mb.window.webContents.send('setsyncfinished', arg);
   //ipcMain.emit("log", "set syncmyfinished:" + arg);
   ipcMain.emit("refreshuserinfo");
 });
@@ -379,7 +379,7 @@ ipcMain.on('setsyncteamfinished', function (arg) { //设置我的盘库同步完
   if (syncteamfinished) {
     ipcMain.emit("setTeamFileAlert", _conf.localDir + "/" + defaultSyncFolder + "/TeamFiles");
   }
-  mb.window.webContents.send('setsyncteamfinished', arg);
+  mb.window.webContents.send('setsyncfinished', arg);
   //ipcMain.emit("log", "set syncteamfinished:" + arg);
   ipcMain.emit("refreshuserinfo");
 });
