@@ -1,6 +1,9 @@
 node_modules
 dist
 compile
+release
+.cache
+npm-debug.log
 .DS_Store
 img/.DS_Store
 

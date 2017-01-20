@@ -30,7 +30,8 @@
     "appId": "joinkey.com.cn",
     "category": "public.app-category.files-sync",
     "win": {
-      "target": "nsis"
+      "target":"nsis",
+      "icon":"img/icons/icon.ico"
     },
     "dmg": {
       "contents": [
@@ -53,12 +54,14 @@
       ]
     }
   },
+  "sourceFiles":[ "./src/**/**","./img/**/**","./vendor/**/**"],
   "dependencies": {
     "form-data": "^2.1.2",
     "fs.notify": "0.0.4",
     "menubar": "^5.2.0",
     "moment": "^2.17.1",
     "node-schedule": "^1.2.0",
+    "electron-windows-inno-installer": "^0.3.26",
     "request": "^2.79.0"
   },
   "devDependencies": {
