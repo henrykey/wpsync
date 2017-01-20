@@ -54,7 +54,7 @@
       ]
     }
   },
-  "sourceFiles":[ "./src/**/**","node_modules/**.**","./img/**/**","./vendor/**/**"],
+  "sourceFiles":[ "./src/**/**","node_modules/**/**","./img/**/**","./vendor/**/**"],
   "dependencies": {
     "form-data": "^2.1.2",
     "fs.notify": "0.0.4",
