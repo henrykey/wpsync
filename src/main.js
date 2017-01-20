@@ -9,6 +9,7 @@ const menubar = require('menubar')
 const Menu = electron.Menu
 const ipcMain = electron.ipcMain
 const ipcRender = electron.ipcRenderer;
+const moment = require("moment");
 //加载同步模块
 var sync = require('./components/sync');
 //设置同步完成后的回调事件
@@ -31,7 +32,6 @@ var fs = require('fs');
 var os = require('os');
 
 var defaultSyncFolder = "jwp";//默认同步目录名称
-
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () { //程序退出事件
@@ -100,14 +100,15 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
   ipcMain.on('openfolder', (event) => {//自定义按退出键
     //alert('openfolder');
-    console.log('openfolder');
-    electron.shell.openItem('/Users/kehongwei/txt');
+    var _conf = getconf();
+    //console.log('openfolder');
+    electron.shell.openItem(_conf.localDir);
   });
   ipcMain.on('opencloud', (event) => {//自定义按退出键
     var _conf = getconf();
-    electron.shell.openExternal('http://' + _conf.host + ':' + _conf.port);
+    electron.shell.openExternal('http://' + _conf.host + ':' + _conf.port+"/wp/synclogin?user="+_conf.user+"&passwd="+_conf.passwd+"&authtime="+new Date().getTime());
     //alert('opencloud');
-    console.log('opencloud ' + _conf.host);
+    //console.log('opencloud ' + _conf.host);
   });
 
   ipcMain.on('quit', (event, arg) => {//自定义按退出键
@@ -154,13 +155,13 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
     }
     mb.window.webContents.send('setsyncfinished', arg);
-    console.log("set syncfinished:" + arg);
+    ipcMain.emit("log","set syncfinished:" + arg);
     ipcMain.emit("refreshuserinfo");
   });
 
   ipcMain.on('userinfo', function (event, arg) { //自定义获取用户信息
     var _conf = getconf();
-    console.log(arg);
+    ipcMain.emit("log",arg);
     //尝试登陆
     var opt = {
       'host': _conf.host,
@@ -181,6 +182,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       else {
         userInfo = data;
       }
+      
       event.sender.send('userinfo', userInfo);//将信息发送至窗体
     });
 
@@ -207,13 +209,14 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       else {
         userInfo = data;
       }
+      
       mb.window.webContents.send('userinfo', userInfo);
     });
 
   });
   ipcMain.on('logoninfo', function (event, arg) {//自定义连接信息
     connectInfo = '已连接 '
-    console.log(arg);
+    ipcMain.emit("log",arg);
     event.sender.send('userinfo', connectInfo);//发送连接信息至窗体
   });
 
@@ -235,6 +238,9 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     //密码未改变
     if (_conf.passwd != null && _conf.passwd != "" && (conf.passwd == null || conf.passwd == "")) {
       conf.passwd = _conf.passwd;
+    }else{
+      //将密码加密
+      conf.passwd = Encrypt(conf.passwd);
     }
     //console.log("save conf to :" + __dirname + "/../../config.json");
 
@@ -245,7 +251,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       //初始化同步目录
       initSyncFolder(conf);
     }
-    else if (!fs.existsSync(conf.localDir + "/" + conf.user)) {
+    else if (!fs.existsSync(conf.localDir + "/" + defaultSyncFolder)) {
       //初始化同步目录
       initSyncFolder(conf);
     }    
@@ -263,7 +269,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
 
   ipcMain.on('setFileAlert', function (notifypath) { //开始文件监控  
-    console.log("set FileAlert.");
+    ipcMain.emit("log","set FileAlert.");
 
     if (fs.existsSync(notifypath)) {
       fileAlert.stop();
@@ -283,7 +289,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
         fileChangeInfo = '有文件被改变！'; //更新文件状态信息
         //将文件路径中的"\"替换为"/"
         path = path.replace(/\\/g, "/");
-        console.log("fileAlert:" + path);
+        ipcMain.emit("log","fileAlert:" + path);
         //调用同步程序
         callSync(path);
         mb.window.webContents.send('file-change-notify', fileChangeInfo);//发送文件状态信息至窗体
@@ -293,11 +299,12 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   });
 
   ipcMain.on('connecterr', function (event, err) { //连接服务器失败
-    console.log("connect error:"+err);    
-    ipcMain.emit("refreshuserinfo");//断开用户连接
-    
+    ipcMain.emit("log","connect error:"+err);    
+    ipcMain.emit("refreshuserinfo");//断开用户连接    
   });
-
+  ipcMain.on('log', function (message) { //打印log
+    console.log(moment().format("YYYY-MM-DD HH:mm:ss.SSS")+ " "+message);        
+  });
 });
 
 
@@ -335,7 +342,7 @@ function callSync(filepath) {
       //test login
       wpservice.login(opt, function (data, cbdata) {
         if (data == null || data.status < 0) {
-          console.log("call sync fail: login auth fail");
+          ipcMain.emit("log","call sync fail: login auth fail");
         }
         //登录成功，准备启动同步
         else {
@@ -347,7 +354,7 @@ function callSync(filepath) {
       });
     }
     if (error < 0) {
-      console.log("call sync fail:" + message);
+      ipcMain.emit("log","call sync fail:" + message);
     }
 
   }
@@ -431,15 +438,28 @@ function startSync(filepath,conf) {//启动同步程序
   fileAlert.stop();
   //设置同步状态
   ipcMain.emit("setsyncfinished", false);
-  console.log("start sync... ");
+  ipcMain.emit("log","start sync... ");
   try{
     initSyncFolder(conf);
     //开始同步
     sync.syncmy(filepath, syncConf);  
   }catch(e){
-    console.log(e);
+    ipcMain.emit("log",e);
   }
   
 }
+function Encrypt(str){
+  var str2 = new Buffer(str).toString("base64");
+  return str2;
+}
+function Decrypt(str){
+  var str2 = new Buffer(str,"base64").toString();
+  return str2;
+}
+function timerefreshuserinfo(){
+  ipcMain.emit("log","timer refresh userinfo");
+  ipcMain.emit("refreshuserinfo");
+}
+setInterval(callSync, 10 * 1000);//设置定时器，3分钟
 
-setInterval(callSync, 3 * 60 * 1000);//设置定时器，3分钟
+setInterval(timerefreshuserinfo, 20 * 1000);//设置定时器，3分钟
