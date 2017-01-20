@@ -582,8 +582,8 @@ function timerefreshuserinfo() {
   ipcMain.emit("refreshuserinfo");
 }
 
-setInterval(callSyncMy, 300 * 1000);//设置定时器，3分钟
+setInterval(callSyncMy, 180 * 1000);//设置定时器-同步我的盘库，3分钟
 
-setInterval(callSyncTeam, 10 * 1000);//设置定时器，3分钟
+setInterval(callSyncTeam, 180 * 1000);//设置定时器-同步工作组盘库，3分钟
 
 setInterval(timerefreshuserinfo, 600 * 1000);//设置定时器-刷新登录，10分钟
