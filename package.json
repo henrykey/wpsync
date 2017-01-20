@@ -55,7 +55,6 @@
     }
   },
   "sourceFiles":[ "./src/**/**",
-    "node_modules/**/**",
     "./img/**/**",
     "./vendor/**/**"],
   "dependencies": {
