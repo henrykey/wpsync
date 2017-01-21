@@ -89,7 +89,6 @@
 .wp-group {
   border-bottom: grey 1px solid;
   padding: 10px;
-  background-color: #e3e3e3;
   font-family: "Microsoft YaHei", sans-serif;
   font-size:13px
 }
@@ -109,6 +108,9 @@
   margin-bottom:0
 }
 
+.tgroup-label{
+  height:24px;
+}
 .tgroup-setting {
   display: block
 }
@@ -145,6 +147,20 @@ hr{
   padding-right: 10px;
   font-size: 130%;
   color: #0d24a9;
+}
+
+.jkbtn-check{
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 140%;
+  color: #0aa568;
+}
+
+.jkbtn-cancel{
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 140%;
+  color: #ce1812;
 }
 
 .jkcheck{
