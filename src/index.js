@@ -35,12 +35,12 @@ function getUserInfo() {
     if (userinfo != null) {
       document.querySelector('.js-userinfo').textContent = userinfo.username + "  " + userinfo.deptname + "";
       document.querySelector('.js-logoninfo').textContent = '已连接';
-      document.querySelector('.logonicon').className = 'logonicon icon icon-check';
+      document.querySelector('.logonicon').className = 'logonicon icon icon-check jkcheck';
       document.querySelector('.js-spaceused').innerHTML = "已使用:" + userinfo.usedspace + " 共" + userinfo.totalspace;
     } else {
       document.querySelector('.js-userinfo').textContent = "登录失败";
       document.querySelector('.js-logoninfo').textContent = '未连接';
-      document.querySelector('.logonicon').className = 'logonicon icon icon-cancel';
+      document.querySelector('.logonicon').className = 'logonicon icon icon-cancel jkcancel';
       document.querySelector('.js-spaceused').innerHTML = "&nbsp;";
     }
 

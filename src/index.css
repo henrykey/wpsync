@@ -80,9 +80,9 @@
 
 .information {
   border: 1px;
-  padding: 4px;
+  padding: 2px;
   padding-left: 10px;
-  background-color: #e3e3e3;
+  background-color: #f1f1f1;
   font-family: "Microsoft YaHei", sans-serif;
   font-size:12px
 }
@@ -122,8 +122,43 @@ hr{
   size:3
 }
 
-.jkhead{
-  background-color: RGB(25,102,255)  
+.jkheader{
+  background-color: #b8d4f5
+}
+
+.jkfolder{
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 130%;
+  color: #f9d692;  
+}
+
+.jkcloud{
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 130%;
+  color: #6badf9;  
+}
+
+.jkbtn{
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 130%;
+  color: #0d24a9;
+}
+
+.jkcheck{
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 120%;
+  color: #0aa568;
+}
+
+.jkcancel{
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 120%;
+  color: #ce1812;
 }
 
 #navsite { 
@@ -136,7 +171,7 @@ hr{
     padding: 0; 
 } 
 #navsite ul li { 
-    height:40px;
+    height:34px;
     margin: 0; 
 } 
 #navsite ul li a { 
@@ -146,8 +181,8 @@ hr{
     width: 100%; 
 } 
 #navsite ul li a {
-    line-height: 40px;
-    height:40px;
+    line-height: 36px;
+    height:36px;
     width: auto; 
 }
 #navsite ul li a i {

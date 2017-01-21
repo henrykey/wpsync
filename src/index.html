@@ -6,35 +6,31 @@
 <link rel="stylesheet" href="./index.css" media="screen" charset="utf-8">
 <body>
   <div class="window">
-    <header class="toolbar toolbar-header jkheader">
+    <header class="toolbar-header jkheader">
       <h1 class="title">智汇仓测试版 <span class="js-version"></span></h1>
     </header>
     <div class="information"><span class="js-userinfo">未登陆！</span>
       <span class="information js-logoninfo"></span>
-      <span class="logonicon icon icon-cancel"></span>
+      <span class="logonicon icon icon-cancel jkcancel"></span>
     </div>
     <div class="information "><span class="js-spaceused">&nbsp;</span></div>
 
     <div id="navsite">
     <ul>
       <li>
-          <a class="openfolder"><i class="icon icon-folder"></i>打开本地文件夹</a>
+          <a class="openfolder"><i class="icon icon-folder jkfolder"></i>打开本地文件夹</a>
       </li>
       <li>
-          <a class="opencloud"><i class="icon icon-cloud"></i>访问云端</a>
+          <a class="opencloud"><i class="icon icon-cloud jkcloud"></i>访问云端</a>
       </li>
     </ul>
     </div>
 
-    <footer class="toolbar toolbar-footer">
-      <div class="toolbar-actions">
-        <button class="btn btn-default js-quit">
-          退出
-        </button>
-        <button class="btn btn-primary js-setting">
-          设置
-        </button>
+    <footer class="toolbar-footer information">
+      <div>
+        <a class="btn js-quit jkbtn icon icon-cancel"></a>
         <span class="information js-syncinfo"></span>
+        <a class="jkbtn btn pull-right icon icon-cog js-setting"></a>
       </div>
     </footer>
   </div>

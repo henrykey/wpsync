@@ -50,8 +50,8 @@ app.on('will-quit', function () {//程序即将退出事件
 let mb = menubar({//创建托盘窗体
   index: path.join('file://', __dirname, 'index.html'),
   icon: path.join(__dirname, '../img/icons/IconTemplate.png'),
-  width: 300,
-  height: 190,
+  width: 280,
+  height: 170,
   resizable: false,
   transparent: true,
   showDockIcon: false,
