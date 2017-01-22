@@ -31,6 +31,7 @@ var fs = require('fs');
 var os = require('os');
 
 var defaultSyncFolder = "jwp";//默认同步目录名称
+var defaultJWPFolder = ".jwp";//默认jwp系统文件夹名称
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () { //程序退出事件
@@ -515,20 +516,21 @@ function syncBefore(conf) {
 //获取配置信息
 function getconf() {
   var confstr;
-  if (fs.existsSync(__dirname + '/../../jwpconfig.json')) {
-    confstr = fs.readFileSync(__dirname + '/../../jwpconfig.json', 'utf-8');
+  initJWPFolder();
+  if (fs.existsSync(os.homedir() + '/'+defaultJWPFolder+'/jwpconfig.json')) {
+    confstr = fs.readFileSync(os.homedir() + '/'+defaultJWPFolder+'/jwpconfig.json', 'utf-8');
 
   } else {
     confstr = '{"localDir":"","passwd":"","synctype":"","user":"","host":"","port":""}';
   }
   var conf = JSON.parse(confstr);
-
   return conf;
 }
 
 function writeconf(conf) {
+  initJWPFolder();
   //写入配置信息
-  fs.writeFileSync(__dirname + '/../../jwpconfig.json', JSON.stringify(conf));
+  fs.writeFileSync(os.homedir() + '/'+defaultJWPFolder+'/jwpconfig.json', JSON.stringify(conf));
 }
 
 
@@ -549,6 +551,9 @@ function initSyncFolder(conf,initdata) {
   if (conf.host == null || conf.host == "") {
     return;
   }
+  //初始化jwp系统文件夹
+  initJWPFolder();
+
   //ipcMain.emit("log", "initSyncFolder:" + conf.localDir + "/" + defaultSyncFolder+" initdata:"+initdata);
   if (!fs.existsSync(conf.localDir + "/" + defaultSyncFolder)) {
     fs.mkdirSync(conf.localDir + "/" + defaultSyncFolder);
@@ -583,6 +588,12 @@ function initSyncFolder(conf,initdata) {
   }
 }
 
+function initJWPFolder(){//初始化jwp系统文件夹
+  var homedir = os.homedir() + '/' + defaultJWPFolder;
+  if (!fs.existsSync(homedir)) {
+    fs.mkdirSync(homedir);
+  }
+}
 
 
 function Encrypt(str) {
@@ -600,6 +611,6 @@ function timerefreshuserinfo() {
 
 setInterval(callSyncMy, 3*60 * 1000);//设置定时器-同步我的盘库，3分钟
 
-setInterval(callSyncTeam, 3*60 * 1000);//设置定时器-同步工作组盘库，3分钟
+//setInterval(callSyncTeam, 3*60 * 1000);//设置定时器-同步工作组盘库，3分钟
 
 setInterval(timerefreshuserinfo, 10*60 * 1000);//设置定时器-刷新登录，10分钟
