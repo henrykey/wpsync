@@ -93,7 +93,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   mb.showWindow();
 
   //开始同步
-  callSyncMy();
+  //callSyncMy();
   //打开调试工具
   //mb.window.webContents.openDevTools();
 
@@ -267,6 +267,8 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       //初始化同步目录
       initSyncFolder(conf, true);
     }
+    
+    ipcMain.emit("callSync");//保存配置文件后，马上进行同步
 
     event.sender.send('saveconf', "save conf ok");//将信息发送至窗体
     //close settingsWin
@@ -289,8 +291,43 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     ipcMain.emit("log", "disconnect:" + disconnect);
     ipcMain.emit("refreshuserinfo");
   });
-  ipcMain.on('getversion', function (event,callback) { //获取版本
+  ipcMain.on('getversion', function (event, callback) { //获取版本
     event.sender.send(callback, jwpversion);//将信息发送至窗体
+  });
+  ipcMain.on('callSync', function (event, filepath) { //同步
+    //停止连接
+    if (disconnect)
+      return;
+    var conf = getconf();
+    var ret = syncBefore(conf);
+    if (ret.error < 0) {
+      ipcMain.emit("log", "call sync fail:" + ret.message);
+    } else {
+      //尝试登陆
+      var opt = {
+        'host': conf.host,
+        'port': conf.port,
+        'user': conf.user,
+        'passwd': conf.passwd
+      };
+      //test login
+      wpservice.login(opt, function (data, cbdata) {
+        if (data == null || data.status < 0) {
+          ipcMain.emit("log", "call syncmy fail: login auth fail");
+          ipcMain.emit("refreshuserinfo");
+        }
+        //登录成功，准备启动同步
+        else {
+          try {
+            startSync(filepath, conf);
+          } catch (e) {
+            ipcMain.emit("log", e);
+            ipcMain.emit("refreshuserinfo");
+            ipcMain.emit("setsyncmyfinished", true);
+          }
+        }
+      });
+    }
   });
 });
 
@@ -343,7 +380,7 @@ ipcMain.on('setMyFileAlert', function (notifypath) { //开始文件监控
         path = path.replace(/\\/g, "/");
         //ipcMain.emit("log", "myFileAlert:" + path);
         //调用同步程序
-        callSyncMy(path);
+        ipcMain.emit("callSync", path);
         //mb.window.webContents.send('file-change-notify', fileChangeInfo);//发送文件状态信息至窗体
       });
     } catch (e) {
@@ -354,7 +391,7 @@ ipcMain.on('setMyFileAlert', function (notifypath) { //开始文件监控
 });
 
 
-function startSyncMy(filepath, conf) {//启动同步程序
+function startSync(filepath, conf) {//启动同步程序
   if (!syncmyfinished)
     return;
   var syncConf = { url: '', port: '', un: '', pw: '', localDir: '', mystrategy: '', teamstrategy: '' };
@@ -367,14 +404,15 @@ function startSyncMy(filepath, conf) {//启动同步程序
 
   //同步过程中停止文件监控
   myFileAlert.close();
-  //设置同步状态
-  ipcMain.emit("setsyncfinished", false);
-  ipcMain.emit("log", "start sync my... ");
+
   try {
     //检查同步目录是否存在
     initSyncFolder(conf, false);
     //获取不能删除的文件夹
     syncJWPSystem(function () {
+      //设置同步状态
+      ipcMain.emit("setsyncfinished", false);
+      ipcMain.emit("log", "start sync my... ");
       //开始同步
       sync.sync(filepath, syncConf);
     });
@@ -384,43 +422,7 @@ function startSyncMy(filepath, conf) {//启动同步程序
   }
 }
 
-//调用同步模块函数
-function callSyncMy(filepath) {
-  //停止连接
-  if (disconnect)
-    return;
-  var conf = getconf();
-  var ret = syncBefore(conf);
-  if (ret.error < 0) {
-    ipcMain.emit("log", "call sync fail:" + ret.message);
-  } else {
-    //尝试登陆
-    var opt = {
-      'host': conf.host,
-      'port': conf.port,
-      'user': conf.user,
-      'passwd': conf.passwd
-    };
-    //test login
-    wpservice.login(opt, function (data, cbdata) {
-      if (data == null || data.status < 0) {
-        ipcMain.emit("log", "call syncmy fail: login auth fail");
-        ipcMain.emit("refreshuserinfo");
-      }
-      //登录成功，准备启动同步
-      else {
-        try {
-          startSyncMy(filepath, conf);
-        } catch (e) {
-          ipcMain.emit("log", e);
-          ipcMain.emit("refreshuserinfo");
-          ipcMain.emit("setsyncmyfinished", true);
-        }
-      }
-    });
-  }
 
-}
 /*我的盘库 结束============================================== */
 
 
@@ -551,7 +553,7 @@ function syncJWPSystem(callback) {//同步.jwp的系统数据---暂未实现
   //获取不能删除的目录
   wpservice.getsystem(opt, function (data, cbdata) {
     if (data == null || data.status < 0) {
-      ipcMain.emit("log", "call syncteam fail: login auth fail");
+      ipcMain.emit("log", "call sync fail: login auth fail");
     }
     else {
       //不能删除
@@ -594,9 +596,12 @@ function readversion() {
     var packageinfo = JSON.parse(fs.readFileSync(packagefile).toString());
     jwpversion = packageinfo.version;
   }
-  console.log("version:"+jwpversion);
+  console.log("version:" + jwpversion);
 }
-setInterval(callSyncMy, 3 * 60 * 1000);//设置定时器-同步我的盘库，3分钟
+function fireCallSync(){
+   ipcMain.emit("callSync");
+}
+setInterval(fireCallSync, 3 * 60 * 1000);//设置定时器-同步我的盘库，3分钟
 
 //setInterval(callSyncTeam, 3*60 * 1000);//设置定时器-同步工作组盘库，3分钟
 
