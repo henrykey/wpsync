@@ -31,7 +31,7 @@ Compression=lzma
 SolidCompression=yes
 
 [Languages]
-Name: "Simplified Chinese"; MessagesFile: "compiler:Default.isl"
+Name: "chinese"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkablealone
