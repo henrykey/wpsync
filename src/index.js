@@ -27,7 +27,7 @@ const getFileChangeInfo = () => {
 }
 //获取版本信息处理
 const verInfo = () => {
-  document.querySelector('.js-version').textContent = '0.6.0-alpha';
+  document.querySelector('.js-version').textContent = '0.6.1-alpha';
 }
 //获取用户信息处理
 function getUserInfo() {
