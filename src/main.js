@@ -88,7 +88,8 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   //显示窗体
   mb.showWindow();
 
-  // callSyncMy("");
+  //开始同步
+  callSyncMy();
   //打开调试工具
   //mb.window.webContents.openDevTools();
 
@@ -581,7 +582,7 @@ function timerefreshuserinfo() {
   ipcMain.emit("refreshuserinfo");
 }
 
-setInterval(callSyncMy, 10 * 1000);//设置定时器-同步我的盘库，3分钟
+setInterval(callSyncMy, 3 * 60 * 1000);//设置定时器-同步我的盘库，3分钟
 
 //setInterval(callSyncTeam, 3*60 * 1000);//设置定时器-同步工作组盘库，3分钟
 
