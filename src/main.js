@@ -105,7 +105,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     //alert('openfolder');
     var _conf = getconf();
     //console.log('openfolder');
-    electron.shell.openItem(_conf.localDir+"/"+defaultSyncFolder);
+    electron.shell.openItem(_conf.localDir + "/" + defaultSyncFolder);
   });
   ipcMain.on('opencloud', (event) => {//自定义按退出键
     var _conf = getconf();
@@ -140,7 +140,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   });
 
   ipcMain.on('closeconf', function (event, arg) { //关闭/销毁设置页面
-    
+
     if (settingWin != null) {
       settingWin.close();
       settingWin = null;
@@ -227,10 +227,10 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
   ipcMain.on('saveconf', function (event, conf) { //保存config信息  
     //检查目录是否存在
-    if(!fs.existsSync(conf.localDir)){
-      event.sender.send('alertmessage', "目录:"+conf.localDir+"不存在，请选择其他目录。");//将信息发送至窗体
+    if (!fs.existsSync(conf.localDir)) {
+      event.sender.send('alertmessage', "目录:" + conf.localDir + "不存在，请选择其他目录。");//将信息发送至窗体
       return;
-    }     
+    }
     var _conf = getconf();
     //密码未改变
     if (_conf.passwd != null && _conf.passwd != "" && (conf.passwd == null || conf.passwd == "")) {
@@ -246,11 +246,11 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     //同步目录改变
     if (_conf.localDir != conf.localDir) {
       //初始化同步目录
-      initSyncFolder(conf,true);
+      initSyncFolder(conf, true);
     }
     else if (!fs.existsSync(conf.localDir + "/" + defaultSyncFolder)) {
       //初始化同步目录
-      initSyncFolder(conf,true);
+      initSyncFolder(conf, true);
     }
 
     event.sender.send('saveconf', "save conf ok");//将信息发送至窗体
@@ -298,23 +298,23 @@ ipcMain.on('setMyFileAlert', function (notifypath) { //开始文件监控
     }
   }
   if (fs.existsSync(notifypath)) {
-    
+
     myFileAlert.clearFolders();
     //遍历子目录
     var filelist = require('./components/getAllFolder').getAllFiles(notifypath, false);
 
-    
+
     //加入需监控的目录
     filelist.forEach(function (file) {
       //ipcMain.emit("log", "MyFileAlert addFolder:"+file);
       myFileAlert.addFolder(file);
     });
-    
-    
+
+
     //注册回调函数
     myFileAlert.start(function (file, event, path) {
       var msg = file + ' ' + event + ' in ' + path; //测试信息
-      ipcMain.emit("log",msg);
+      ipcMain.emit("log", msg);
       fileChangeInfo = '有文件被改变！'; //更新文件状态信息
       //将文件路径中的"\"替换为"/"
       path = path.replace(/\\/g, "/");
@@ -325,6 +325,8 @@ ipcMain.on('setMyFileAlert', function (notifypath) { //开始文件监控
     });
   }
 });
+
+
 function startSyncMy(filepath, conf) {//启动同步程序
   if (!syncmyfinished)
     return;
@@ -341,14 +343,23 @@ function startSyncMy(filepath, conf) {//启动同步程序
   //设置同步状态
   ipcMain.emit("setsyncmyfinished", false);
   ipcMain.emit("log", "start sync my... ");
-  try {    
-    initSyncFolder(conf,false);
-    //开始同步
-    sync.sync(filepath, syncConf);
+  try {
+    //检查同步目录是否存在
+    initSyncFolder(conf, false);
+    //获取不能删除的文件夹
+    syncJWPSystem(function(){
+      //开始同步
+      sync.sync(filepath, syncConf);
+      
+      //测试
+      //ipcMain.emit("setsyncmyfinished", true);
+    });
   } catch (e) {
     ipcMain.emit("log", e);
+    ipcMain.emit("refreshuserinfo");
   }
 }
+
 //调用同步模块函数
 function callSyncMy(filepath) {
   var conf = getconf();
@@ -367,13 +378,16 @@ function callSyncMy(filepath) {
     wpservice.login(opt, function (data, cbdata) {
       if (data == null || data.status < 0) {
         ipcMain.emit("log", "call syncmy fail: login auth fail");
+        ipcMain.emit("refreshuserinfo");
       }
       //登录成功，准备启动同步
       else {
-        try{
+        try {
           startSyncMy(filepath, conf);
-        }catch(e){
+        } catch (e) {
           ipcMain.emit("log", e);
+          ipcMain.emit("refreshuserinfo");
+          ipcMain.emit("setsyncmyfinished", true);
         }
       }
     });
@@ -381,116 +395,6 @@ function callSyncMy(filepath) {
 
 }
 /*我的盘库 结束============================================== */
-/*工作组盘库 开始------------------------------------------*/
-//sync.setteamFinishEvent('setsyncteamfinished');
-var teamFileAlert = require('./components/jpwnotify');//监控文件夹
-var syncteamfinished = true;
-
-ipcMain.on('setsyncteamfinished', function (arg) { //设置我的盘库同步完成状态
-  syncteamfinished = arg;
-  var _conf = getconf();
-  //同步完成，启动文件监控
-  if (syncteamfinished) {
-    ipcMain.emit("setTeamFileAlert", _conf.localDir + "/" + defaultSyncFolder + "/TeamFiles");
-  }
-  mb.window.webContents.send('setsyncfinished', arg);
-  //ipcMain.emit("log", "set syncteamfinished:" + arg);
-  ipcMain.emit("refreshuserinfo");
-});
-
-ipcMain.on('setTeamFileAlert', function (notifypath) { //开始文件监控  
-  //ipcMain.emit("log", "set TeamFileAlert:" + notifypath);
-
-  if (notifypath == null) {
-    var _conf = getconf();
-    if (_conf.localDir != null && _conf.localDir != "" && fs.existsSync(_conf.localDir + "/" + defaultSyncFolder + "/TeamFiles")) {
-      notifypath = _conf.localDir + "/" + defaultSyncFolder + "/TeamFiles";
-    }
-  }
-  if (fs.existsSync(notifypath)) {
-    teamFileAlert.clearFolders();
-    //遍历子目录
-    var filelist = require('./components/getAllFolder').getAllFiles(notifypath, false);
-
-    //加入需监控的目录
-    filelist.forEach(function (file) {
-      //ipcMain.emit("log", file);
-      teamFileAlert.addFolder(file);
-    });
-
-    //注册回调函数
-    teamFileAlert.start(function (file, event, path) {
-      var msg = file + ' ' + event + ' in ' + path; //测试信息
-      fileChangeInfo = '有文件被改变！'; //更新文件状态信息
-      //将文件路径中的"\"替换为"/"
-      path = path.replace(/\\/g, "/");
-      ipcMain.emit("log", "teamFileAlert:" + path);
-      //调用同步程序
-      callSyncTeam(path);
-      mb.window.webContents.send('file-change-notify', fileChangeInfo);//发送文件状态信息至窗体
-    });
-    
-  }
-});
-function startSyncTeam(filepath, conf) {//启动同步程序
-  if (!syncteamfinished)
-    return;
-  var syncConf = { url: '', port: '', un: '', pw: '', localDir: '', mystrategy: '', teamstrategy: '' };
-  syncConf.url = conf.host;
-  syncConf.port = conf.port;
-  syncConf.un = conf.user;
-  syncConf.pw = conf.passwd;
-  syncConf.localDir = conf.localDir + "/" + defaultSyncFolder;
-  syncConf.strategy = conf.synctype;
-
-  //同步过程中停止文件监控
-  teamFileAlert.close();
-  //设置同步状态
-  ipcMain.emit("setsyncteamfinished", false);
-  ipcMain.emit("log", "start sync team... ");
-  try {    
-    initSyncFolder(conf,false);
-    //开始同步
-    sync.syncteam(filepath, syncConf);
-  } catch (e) {
-    ipcMain.emit("log", e);
-  }
-}
-//调用同步模块函数
-function callSyncTeam(filepath) {
-  var conf = getconf();
-  var ret = syncBefore(conf);
-  if (ret.error < 0) {
-    ipcMain.emit("log", "call sync fail:" + ret.message);
-  } else {
-    //尝试登陆
-    var opt = {
-      'host': conf.host,
-      'port': conf.port,
-      'user': conf.user,
-      'passwd': conf.passwd
-    };
-    //test login
-    wpservice.login(opt, function (data, cbdata) {
-      if (data == null || data.status < 0) {
-        ipcMain.emit("log", "call syncteam fail: login auth fail");
-      }
-      //登录成功，准备启动同步
-      else {
-        try{
-          startSyncTeam(filepath, conf);
-        }catch(e){
-          ipcMain.emit("log", e);
-        }
-        
-      }
-    });
-  }
-
-}
-/*工作组盘库 结束============================================== */
-
-
 
 function syncBefore(conf) {
   var error = 0;
@@ -517,8 +421,8 @@ function syncBefore(conf) {
 function getconf() {
   var confstr;
   initJWPFolder();
-  if (fs.existsSync(os.homedir() + '/'+defaultJWPFolder+'/jwpconfig.json')) {
-    confstr = fs.readFileSync(os.homedir() + '/'+defaultJWPFolder+'/jwpconfig.json', 'utf-8');
+  if (fs.existsSync(os.homedir() + '/' + defaultJWPFolder + '/jwpconfig.json')) {
+    confstr = fs.readFileSync(os.homedir() + '/' + defaultJWPFolder + '/jwpconfig.json', 'utf-8');
 
   } else {
     confstr = '{"localDir":"","passwd":"","synctype":"","user":"","host":"","port":""}';
@@ -530,12 +434,12 @@ function getconf() {
 function writeconf(conf) {
   initJWPFolder();
   //写入配置信息
-  fs.writeFileSync(os.homedir() + '/'+defaultJWPFolder+'/jwpconfig.json', JSON.stringify(conf));
+  fs.writeFileSync(os.homedir() + '/' + defaultJWPFolder + '/jwpconfig.json', JSON.stringify(conf));
 }
 
 
 //初始化同步程序目录
-function initSyncFolder(conf,initdata) {
+function initSyncFolder(conf, initdata) {
   var homedir = conf.localDir;
   var localdata = {};
   var teamdata = {};
@@ -558,43 +462,75 @@ function initSyncFolder(conf,initdata) {
   if (!fs.existsSync(conf.localDir + "/" + defaultSyncFolder)) {
     fs.mkdirSync(conf.localDir + "/" + defaultSyncFolder);
   }
+
   homedir = conf.localDir + "/" + defaultSyncFolder;
-  // if (!fs.existsSync(homedir + '/MyFiles')) {
-  //   fs.mkdirSync(homedir + '/MyFiles');
-  // }
-  // if (!fs.existsSync(homedir + '/TeamFiles')) {
-  //   fs.mkdirSync(homedir + '/TeamFiles');
-  // }
+
   if (!fs.existsSync(homedir + '/.setting')) {
     fs.mkdirSync(homedir + '/.setting');
   }
   if (!fs.existsSync(homedir + '/.setting/log')) {
     fs.mkdirSync(homedir + '/.setting/log');
   }
-  // if (!fs.existsSync(homedir + '/.setting/teamlog')) {
-  //   fs.mkdirSync(homedir + '/.setting/teamlog');
-  // }
   //初始化重置data文件
   if(initdata){
     fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
-    // fs.writeFileSync(homedir + '/.setting/teamdata.json', JSON.stringify(teamdata));
   }else{
     if (!fs.existsSync(homedir + '/.setting/localdata.json')) {
       fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
     }
-    // if (!fs.existsSync(homedir + '/.setting/teamdata.json')) {
-    //   fs.writeFileSync(homedir + '/.setting/teamdata.json', JSON.stringify(teamdata));
-    // }
   }
 }
 
-function initJWPFolder(){//初始化jwp系统文件夹
+function initJWPFolder() {//初始化jwp系统文件夹
   var homedir = os.homedir() + '/' + defaultJWPFolder;
   if (!fs.existsSync(homedir)) {
     fs.mkdirSync(homedir);
   }
+  if (!fs.existsSync(homedir + "/system")) {//创建系统同步文件夹
+    fs.mkdirSync(homedir + "/system");
+  }
 }
 
+function syncJWPSystem(callback) {//同步.jwp的系统数据---暂未实现
+  //不能删除的目录
+  var _conf = getconf();
+  var sysconfig = {};
+  var nosync = {};
+  var nodel = {};
+  //nosync[_conf.localDir+"/jwp/MyFiles"] = 1;
+  //nosync["文件名1"] = 2;
+  //尝试登陆
+  var opt = {
+    'host': _conf.host,
+    'port': _conf.port,
+    'user': _conf.user,
+    'passwd': _conf.passwd
+  };
+  //获取不能删除的目录
+  wpservice.getsystem(opt, function (data, cbdata) {
+    if (data == null || data.status < 0) {
+      ipcMain.emit("log", "call syncteam fail: login auth fail");
+    }
+    else {
+      //不能删除
+      data.list.forEach(function (element) {
+        //console.log(_conf.localDir + "/"+defaultSyncFolder+"/" + element);
+        nodel[_conf.localDir + "/"+defaultSyncFolder+"/" + element] = 1;
+      });
+      //不能同步
+      nosync[_conf.localDir+"/"+defaultSyncFolder+"/.setting"] = 1;
+
+      //保存
+      sysconfig["nodel"] = nodel;
+      sysconfig["nosync"]=nosync;
+      fs.writeFileSync(os.homedir() + '/.jwp/system/sysconfig.json', JSON.stringify(sysconfig));
+      callback();
+    }
+  });
+
+
+
+}
 
 function Encrypt(str) {
   var str2 = new Buffer(str).toString("base64");
@@ -613,4 +549,5 @@ setInterval(callSyncMy, 10 * 1000);//设置定时器-同步我的盘库，3分�
 
 //setInterval(callSyncTeam, 3*60 * 1000);//设置定时器-同步工作组盘库，3分钟
 
-//setInterval(timerefreshuserinfo, 10*60 * 1000);//设置定时器-刷新登录，10分钟
+setInterval(timerefreshuserinfo, 10 * 60 * 1000);//设置定时器-刷新登录，10分钟
+
