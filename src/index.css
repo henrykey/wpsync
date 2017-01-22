@@ -80,8 +80,6 @@
 
 .information {
   border: 1px;
-  padding: 2px;
-  padding-left: 10px;
   background-color: #f1f1f1;
   font-family: "Microsoft YaHei", sans-serif;
   font-size:12px
@@ -89,6 +87,7 @@
 .wp-group {
   border-bottom: grey 1px solid;
   padding: 10px;
+  padding-top: 5px;
   font-family: "Microsoft YaHei", sans-serif;
   font-size:13px
 }
@@ -139,7 +138,12 @@ hr{
   font-size: 130%;
   color: #f9d692;  
 }
-
+.jkpadded-left{
+  padding-left: 10px;
+}
+.jkpadded-left-less{
+  padding-left: 5px;
+}
 .jkcloud{
   padding-left: 10px;
   padding-right: 10px;
