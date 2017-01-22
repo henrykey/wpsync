@@ -2,6 +2,16 @@
 const {ipcRenderer, shell} = require('electron');
 var _conf;
 
+//获取版本信息处理
+const verInfo = () => {  
+  ipcRenderer.on('setversion', function (event,version) {
+      console.log(version);
+    document.querySelector('js-about-version').innerHTML ="版本:"+version;
+  });
+  ipcRenderer.send('getversion', 'setversion');
+
+}
+
 //注册鼠标单击事件
 document.addEventListener('click', (event) => {
   if (event.target.href) {
@@ -10,8 +20,6 @@ document.addEventListener('click', (event) => {
     event.preventDefault();
   } else if (event.target.classList.contains('js-cancel')) {//关闭settings
     closewin();    
-  } else if (event.target.classList.contains('js-save')) {//保存配置信息
-    saveconfig();
   } else if (event.target.classList.contains('js-save')) {//保存配置信息
     saveconfig();
   } else if (event.target.classList.contains('js-about-label')) {//click about
@@ -48,6 +56,7 @@ ipcRenderer.on('alertmessage', function (event,message) {
 });
 
 $(document).ready(function () {
+    verInfo();
     ipcRenderer.send('getconf', 'getconf...');
 });
 function saveconfig() {    
