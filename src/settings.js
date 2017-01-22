@@ -1,6 +1,24 @@
 //加载香港模块
 const {ipcRenderer, shell} = require('electron');
 var _conf;
+
+//注册鼠标单击事件
+document.addEventListener('click', (event) => {
+  if (event.target.href) {
+    // Open links in external browser
+    shell.openExternal(event.target.href)
+    event.preventDefault();
+  } else if (event.target.classList.contains('js-cancel')) {//关闭settings
+    closewin();    
+  } else if (event.target.classList.contains('js-save')) {//保存配置信息
+    saveconfig();
+  } else if (event.target.classList.contains('js-save')) {//保存配置信息
+    saveconfig();
+  }
+  
+})
+
+
 ipcRenderer.on('getconf', function (event, conf) {
     _conf = conf;
     $("#user").val(_conf.user);
@@ -9,7 +27,7 @@ ipcRenderer.on('getconf', function (event, conf) {
     $("input[name=synctype][value=" + _conf.synctype + "]").prop("checked", "checked");
     //$("input[name=synctype][value="+conf.synctype+"]").;
 
-    console.log(JSON.stringify(_conf));
+    //console.log(JSON.stringify(_conf));
 });
 ipcRenderer.on('saveconf', function (event, message) {
     console.log(message);
