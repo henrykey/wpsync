@@ -114,7 +114,7 @@ function sync(pathpath, conf) {
             }
         }
         else {
-            
+
             var datalist = data.list;
             var datamap = data.map;
             fs.appendFileSync(logfile, new Date() + ' 获取同步列表成功\r\n', 'utf-8');
@@ -265,66 +265,71 @@ function buildlistup(alldata, pathstr, parentid, uplist) {
     var files = fs.readdirSync(pathstr);
     files.forEach(function (file, index) {
         var filepath = pathstr + '/' + file;
-        if (!(filepath in nosync1) && !(pathstr in nosync1) && !(file in nosync2)) {
-            var states = fs.statSync(filepath);
-            var obj = localdata[filepath];
-            if (parentid == -999) {
-                if (obj != null) {
-                    buildlistup(alldata, filepath, obj.sid, uplist);
-                }
-            } else {
-                if (obj == null) {
-                    if (states.isDirectory()) {
-                        var aobj = new Object();
-                        aobj.type = 1;
-                        aobj.filename = file;
-                        aobj.pathstr = pathstr;
-                        aobj.parentid = parentid;
-                        aobj.filepath = filepath;
-                        uplist.push(aobj);
-                    } else {
-                        var aobj = new Object();
-                        aobj.type = 2;
-                        aobj.filename = file;
-                        aobj.pathstr = pathstr;
-                        aobj.parentid = parentid;
-                        aobj.filepath = filepath;
-                        uplist.push(aobj);
-                    }
-                    obj = {};
-                    obj.sid = -9999;
-                } else {
-                    if (!states.isDirectory()) {
-                        var strmd5 = getfilemd5(filepath);
-                        if (obj.strmd5 != strmd5) {
-                            var filekey = filepath.replace(homedir + '/', "");
-                            var stime = datamap[filekey].time;
-                            if (states.mtime.getTime() > stime) {
-                                var aobj = new Object();
-                                aobj.type = 2;
-                                aobj.filename = file;
-                                aobj.pathstr = pathstr;
-                                aobj.parentid = parentid;
-                                aobj.filepath = filepath;
-                                uplist.push(aobj);
-                            } else {
-                                var aobj = new Object();
-                                aobj.type = 3;
-                                aobj.filename = file;
-                                aobj.pathstr = pathstr;
-                                aobj.parentid = parentid;
-                                aobj.filepath = filepath;
-                                uplist.push(aobj);
-                            }
+        if (fs.existsSync(filepath)) {
 
+            var states = fs.statSync(filepath);
+            if (!(filepath in nosync1) && !(pathstr in nosync1) && !(file in nosync2)) {
+
+                var obj = localdata[filepath];
+                if (parentid == -999) {
+                    if (obj != null) {
+                        buildlistup(alldata, filepath, obj.sid, uplist);
+                    }
+                } else {
+                    if (obj == null) {
+                        if (states.isDirectory()) {
+                            var aobj = new Object();
+                            aobj.type = 1;
+                            aobj.filename = file;
+                            aobj.pathstr = pathstr;
+                            aobj.parentid = parentid;
+                            aobj.filepath = filepath;
+                            uplist.push(aobj);
+                        } else {
+                            var aobj = new Object();
+                            aobj.type = 2;
+                            aobj.filename = file;
+                            aobj.pathstr = pathstr;
+                            aobj.parentid = parentid;
+                            aobj.filepath = filepath;
+                            uplist.push(aobj);
+                        }
+                        obj = {};
+                        obj.sid = -9999;
+                    } else {
+                        if (!states.isDirectory()) {
+                            var strmd5 = getfilemd5(filepath);
+                            if (obj.strmd5 != strmd5) {
+                                var filekey = filepath.replace(homedir + '/', "");
+                                var stime = datamap[filekey].time;
+                                if (states.mtime.getTime() > stime) {
+                                    var aobj = new Object();
+                                    aobj.type = 2;
+                                    aobj.filename = file;
+                                    aobj.pathstr = pathstr;
+                                    aobj.parentid = parentid;
+                                    aobj.filepath = filepath;
+                                    uplist.push(aobj);
+                                } else {
+                                    var aobj = new Object();
+                                    aobj.type = 3;
+                                    aobj.filename = file;
+                                    aobj.pathstr = pathstr;
+                                    aobj.parentid = parentid;
+                                    aobj.filepath = filepath;
+                                    uplist.push(aobj);
+                                }
+
+                            }
                         }
                     }
-                }
-                if (states.isDirectory()) {
-                    buildlistup(alldata, filepath, obj.sid, uplist);
+                    if (states.isDirectory()) {
+                        buildlistup(alldata, filepath, obj.sid, uplist);
+                    }
                 }
             }
         }
+
     });
 }
 
@@ -465,7 +470,7 @@ function buildlistdown(alldata, downlist) {
                     obj.smtime = element.time;
                     obj.sid = element.id;
                     localdata[filepath] = obj;
-                    fs.appendFileSync(logfile, new Date() +' 同步' + filepath + '成功\r\n', 'utf-8');
+                    fs.appendFileSync(logfile, new Date() + ' 同步' + filepath + '成功\r\n', 'utf-8');
                 }
             } else {
                 if (!fs.existsSync(filepath)) {

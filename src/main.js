@@ -32,6 +32,7 @@ var os = require('os');
 
 var defaultSyncFolder = "jwp";//默认同步目录名称
 var defaultJWPFolder = ".jwp";//默认jwp系统文件夹名称
+var disconnect = false;//停止链接
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () { //程序退出事件
@@ -152,6 +153,9 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
 
   ipcMain.on('userinfo', function (event, arg) { //自定义获取用户信息
+    //停止连接
+    if (disconnect)
+      return;
     var _conf = getconf();
     ipcMain.emit("log", arg);
     //尝试登陆
@@ -181,6 +185,12 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   });
 
   ipcMain.on('refreshuserinfo', function (event) { //刷新登录用户信息
+    //停止连接
+    if (disconnect) {
+      mb.window.webContents.send('userinfo', null);
+      return;
+    }
+
     var _conf = getconf();
     //登陆   
     var opt = {
@@ -269,6 +279,11 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   ipcMain.on('log', function (message) { //打印log
     console.log(moment().format("YYYY-MM-DD HH:mm:ss.SSS") + " " + message);
   });
+  ipcMain.on('setdisconnect', function (event,arg) { //断开连接
+    disconnect = arg;
+    ipcMain.emit("log", "disconnect:" + disconnect);
+    ipcMain.emit("refreshuserinfo");
+  });
 });
 
 /* 我的盘库 开始------------------------------------------*/
@@ -276,12 +291,12 @@ sync.setFinishEvent('setsyncfinished');
 var myFileAlert = require('./components/jpwnotify');//监控文件夹
 var syncmyfinished = true;
 
-ipcMain.on('setsyncmyfinished', function (arg) { //设置我的盘库同步完成状态
+ipcMain.on('setsyncfinished', function (arg) { //设置我的盘库同步完成状态
   syncmyfinished = arg;
   var _conf = getconf();
   //同步完成，启动文件监控
   if (syncmyfinished) {
-    ipcMain.emit("setMyFileAlert", _conf.localDir + "/" + defaultSyncFolder + "/MyFiles");
+    ipcMain.emit("setMyFileAlert", _conf.localDir + "/" + defaultSyncFolder);
   }
   mb.window.webContents.send('setsyncfinished', arg);
   //ipcMain.emit("log", "set syncmyfinished:" + arg);
@@ -310,19 +325,23 @@ ipcMain.on('setMyFileAlert', function (notifypath) { //开始文件监控
       myFileAlert.addFolder(file);
     });
 
+    try {
+      //注册回调函数
+      myFileAlert.start(function (file, event, path) {
+        var msg = file + ' ' + event + ' in ' + path; //测试信息
+        ipcMain.emit("log", msg);
+        fileChangeInfo = '有文件被改变！'; //更新文件状态信息
+        //将文件路径中的"\"替换为"/"
+        path = path.replace(/\\/g, "/");
+        //ipcMain.emit("log", "myFileAlert:" + path);
+        //调用同步程序
+        callSyncMy(path);
+        //mb.window.webContents.send('file-change-notify', fileChangeInfo);//发送文件状态信息至窗体
+      });
+    } catch (e) {
+      ipcMain.emit("log", e);
 
-    //注册回调函数
-    myFileAlert.start(function (file, event, path) {
-      var msg = file + ' ' + event + ' in ' + path; //测试信息
-      ipcMain.emit("log", msg);
-      fileChangeInfo = '有文件被改变！'; //更新文件状态信息
-      //将文件路径中的"\"替换为"/"
-      path = path.replace(/\\/g, "/");
-      //ipcMain.emit("log", "myFileAlert:" + path);
-      //调用同步程序
-      callSyncMy(path);
-      //mb.window.webContents.send('file-change-notify', fileChangeInfo);//发送文件状态信息至窗体
-    });
+    }
   }
 });
 
@@ -341,7 +360,7 @@ function startSyncMy(filepath, conf) {//启动同步程序
   //同步过程中停止文件监控
   myFileAlert.close();
   //设置同步状态
-  ipcMain.emit("setsyncmyfinished", false);
+  ipcMain.emit("setsyncfinished", false);
   ipcMain.emit("log", "start sync my... ");
   try {
     //检查同步目录是否存在
@@ -350,9 +369,6 @@ function startSyncMy(filepath, conf) {//启动同步程序
     syncJWPSystem(function () {
       //开始同步
       sync.sync(filepath, syncConf);
-
-      //测试
-      //ipcMain.emit("setsyncmyfinished", true);
     });
   } catch (e) {
     ipcMain.emit("log", e);
@@ -362,6 +378,9 @@ function startSyncMy(filepath, conf) {//启动同步程序
 
 //调用同步模块函数
 function callSyncMy(filepath) {
+  //停止连接
+  if (disconnect)
+    return;
   var conf = getconf();
   var ret = syncBefore(conf);
   if (ret.error < 0) {
@@ -395,6 +414,7 @@ function callSyncMy(filepath) {
 
 }
 /*我的盘库 结束============================================== */
+
 
 function syncBefore(conf) {
   var error = 0;
@@ -489,7 +509,7 @@ function initJWPFolder() {//初始化jwp系统文件夹
   var nodel = {};
   sysconfig["nosync"] = nosync;
   sysconfig["nodel"] = nodel;
-  
+
 
   if (!fs.existsSync(homedir)) {
     fs.mkdirSync(homedir);
@@ -527,12 +547,13 @@ function syncJWPSystem(callback) {//同步.jwp的系统数据---暂未实现
     }
     else {
       //不能删除
-      data.list.forEach(function (element) {
-        //console.log(_conf.localDir + "/"+defaultSyncFolder+"/" + element);
+      data.nodel.forEach(function (element) {
         nodel[_conf.localDir + "/" + defaultSyncFolder + "/" + element] = 1;
-        nosync[_conf.localDir + "/" + defaultSyncFolder + "/" + element] = 1;
       });
       //不能同步
+      data.nosync.forEach(function (element) {
+        nosync[_conf.localDir + "/" + defaultSyncFolder + "/" + element] = 1;
+      });
       nosync[_conf.localDir + "/" + defaultSyncFolder + "/.setting"] = 1;
 
       //保存
