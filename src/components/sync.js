@@ -265,7 +265,7 @@ function buildlistup(alldata, pathstr, parentid, uplist) {
     var files = fs.readdirSync(pathstr);
     files.forEach(function (file, index) {
         var filepath = pathstr + '/' + file;
-        if (!(filepath in nosync1) && !(file in nosync2)) {
+        if (!(filepath in nosync1) && !(pathstr in nosync1) && !(file in nosync2)) {
             var states = fs.statSync(filepath);
             var obj = localdata[filepath];
             if (parentid == -999) {
