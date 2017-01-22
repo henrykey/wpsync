@@ -347,10 +347,10 @@ function startSyncMy(filepath, conf) {//启动同步程序
     //检查同步目录是否存在
     initSyncFolder(conf, false);
     //获取不能删除的文件夹
-    syncJWPSystem(function(){
+    syncJWPSystem(function () {
       //开始同步
       sync.sync(filepath, syncConf);
-      
+
       //测试
       //ipcMain.emit("setsyncmyfinished", true);
     });
@@ -473,9 +473,9 @@ function initSyncFolder(conf, initdata) {
     fs.mkdirSync(homedir + '/.setting/log');
   }
   //初始化重置data文件
-  if(initdata){
+  if (initdata) {
     fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
-  }else{
+  } else {
     if (!fs.existsSync(homedir + '/.setting/localdata.json')) {
       fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
     }
@@ -485,11 +485,24 @@ function initSyncFolder(conf, initdata) {
 
 function initJWPFolder() {//初始化jwp系统文件夹
   var homedir = os.homedir() + '/' + defaultJWPFolder;
+  var sysconfig = {};
+  var nosync = {};
+  var nodel = {};
+  sysconfig["nosync"] = nosync;
+  sysconfig["nodel"] = nodel;
+  
+
   if (!fs.existsSync(homedir)) {
     fs.mkdirSync(homedir);
   }
   if (!fs.existsSync(homedir + "/system")) {//创建系统同步文件夹
     fs.mkdirSync(homedir + "/system");
+  }
+  if (!fs.existsSync(homedir + "/system/sysconfig.json")) {
+    fs.writeFileSync(homedir + '/system/sysconfig.json', JSON.stringify(sysconfig));
+  }
+  if (!fs.existsSync(homedir + "/system/userconfig.json")) {
+    fs.writeFileSync(homedir + '/system/userconfig.json', JSON.stringify(sysconfig));
   }
 }
 
@@ -517,14 +530,15 @@ function syncJWPSystem(callback) {//同步.jwp的系统数据---暂未实现
       //不能删除
       data.list.forEach(function (element) {
         //console.log(_conf.localDir + "/"+defaultSyncFolder+"/" + element);
-        nodel[_conf.localDir + "/"+defaultSyncFolder+"/" + element] = 1;
+        nodel[_conf.localDir + "/" + defaultSyncFolder + "/" + element] = 1;
+        nosync[_conf.localDir + "/" + defaultSyncFolder + "/" + element] = 1;
       });
       //不能同步
-      nosync[_conf.localDir+"/"+defaultSyncFolder+"/.setting"] = 1;
+      nosync[_conf.localDir + "/" + defaultSyncFolder + "/.setting"] = 1;
 
       //保存
       sysconfig["nodel"] = nodel;
-      sysconfig["nosync"]=nosync;
+      sysconfig["nosync"] = nosync;
       fs.writeFileSync(os.homedir() + '/.jwp/system/sysconfig.json', JSON.stringify(sysconfig));
       callback();
     }
