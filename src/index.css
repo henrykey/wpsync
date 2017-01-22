@@ -141,9 +141,19 @@ hr{
 .jkpadded-left{
   padding-left: 10px;
 }
+
 .jkpadded-left-less{
   padding-left: 5px;
 }
+
+.jkpadded-right{
+  padding-right: 10px;
+}
+
+.jkpadded-right-less{
+  padding-right: 5px;
+}
+
 .jkcloud{
   padding-left: 10px;
   padding-right: 10px;
