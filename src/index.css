@@ -117,8 +117,13 @@
 .tgroup-about {
   display: none
 }
+.tgroup-about-show {
+  text-align: center;
+  background-color: #f1f1f1;
+}
+
 hr{
-  align:center;
+  text-align:center;
   width:100%;
   color:darkred;
   size:3
@@ -170,6 +175,11 @@ hr{
   color: #0aa568;
 }
 
+.jklogo{
+  float: right;
+  padding: 5px; 
+  width: 35%;
+}
 .jkcancel{
   padding-left: 10px;
   padding-right: 10px;
@@ -177,6 +187,9 @@ hr{
   color: #ce1812;
 }
 
+.jknoshow{
+  display: none;
+}
 #navsite { 
     padding: 0; 
     background-color: #fff; 
