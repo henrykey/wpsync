@@ -463,7 +463,6 @@ function initSyncFolder(conf, initdata) {
     fs.mkdirSync(conf.localDir + "/" + defaultSyncFolder);
   }
 
-
   homedir = conf.localDir + "/" + defaultSyncFolder;
 
   if (!fs.existsSync(homedir + '/.setting')) {
