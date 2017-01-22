@@ -354,10 +354,6 @@ function startSyncMy(filepath, conf) {//启动同步程序
       //测试
       //ipcMain.emit("setsyncmyfinished", true);
     });
-<<<<<<< HEAD
-=======
-    
->>>>>>> fc54dd2447ed3a5e4283c29705742f1755691d0d
   } catch (e) {
     ipcMain.emit("log", e);
     ipcMain.emit("refreshuserinfo");
@@ -399,12 +395,6 @@ function callSyncMy(filepath) {
 
 }
 /*我的盘库 结束============================================== */
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> fc54dd2447ed3a5e4283c29705742f1755691d0d
 
 function syncBefore(conf) {
   var error = 0;
@@ -472,7 +462,6 @@ function initSyncFolder(conf, initdata) {
   if (!fs.existsSync(conf.localDir + "/" + defaultSyncFolder)) {
     fs.mkdirSync(conf.localDir + "/" + defaultSyncFolder);
   }
-<<<<<<< HEAD
 
   homedir = conf.localDir + "/" + defaultSyncFolder;
 
@@ -490,36 +479,6 @@ function initSyncFolder(conf, initdata) {
       fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
     }
   }
-=======
-  // homedir = conf.localDir + "/" + defaultSyncFolder;
-  // if (!fs.existsSync(homedir + '/MyFiles')) {
-  //   fs.mkdirSync(homedir + '/MyFiles');
-  // }
-  // if (!fs.existsSync(homedir + '/TeamFiles')) {
-  //   fs.mkdirSync(homedir + '/TeamFiles');
-  // }
-  // if (!fs.existsSync(homedir + '/.setting')) {
-  //   fs.mkdirSync(homedir + '/.setting');
-  // }
-  // if (!fs.existsSync(homedir + '/.setting/mylog')) {
-  //   fs.mkdirSync(homedir + '/.setting/mylog');
-  // }
-  // if (!fs.existsSync(homedir + '/.setting/teamlog')) {
-  //   fs.mkdirSync(homedir + '/.setting/teamlog');
-  // }
-  // //初始化重置data文件
-  // if (initdata) {
-  //   fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
-  //   fs.writeFileSync(homedir + '/.setting/teamdata.json', JSON.stringify(teamdata));
-  // } else {
-  //   if (!fs.existsSync(homedir + '/.setting/mydata.json')) {
-  //     fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
-  //   }
-  //   if (!fs.existsSync(homedir + '/.setting/teamdata.json')) {
-  //     fs.writeFileSync(homedir + '/.setting/teamdata.json', JSON.stringify(teamdata));
-  //   }
-  // }
->>>>>>> fc54dd2447ed3a5e4283c29705742f1755691d0d
 }
 
 function initJWPFolder() {//初始化jwp系统文件夹
@@ -590,9 +549,4 @@ setInterval(callSyncMy, 10 * 1000);//设置定时器-同步我的盘库，3分�
 
 //setInterval(callSyncTeam, 3*60 * 1000);//设置定时器-同步工作组盘库，3分钟
 
-<<<<<<< HEAD
 setInterval(timerefreshuserinfo, 10 * 60 * 1000);//设置定时器-刷新登录，10分钟
-
-=======
-setInterval(timerefreshuserinfo, 10 * 60 * 1000);//设置定时器-刷新登录，10分钟
->>>>>>> fc54dd2447ed3a5e4283c29705742f1755691d0d
