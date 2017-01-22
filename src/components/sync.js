@@ -76,19 +76,19 @@ function sync(pathpath, conf) {
     homedir = homedir.replace(reg, "/");
     var datestr = moment(new Date()).format("YYYY_MM_DD");
     var yyyy = datestr.substr(0, 4);
-    if (!fs.existsSync(homedir + '/.setting/log/' + yyyy)) {
-        fs.mkdirSync(homedir + '/.setting/log/' + yyyy);
+    if (!fs.existsSync(os.homedir() + '/.jwp/setting/log/' + yyyy)) {
+        fs.mkdirSync(os.homedir() + '/.jwp/setting/log/' + yyyy);
     }
-    if (!fs.existsSync(homedir + '/.setting/log/' + yyyy + '/' + datestr + '.log')) {
-        fs.writeFileSync(homedir + '/.setting/log/' + yyyy + '/' + datestr + '.log', '');
+    if (!fs.existsSync(os.homedir() + '/.jwp/setting/log/' + yyyy + '/' + datestr + '.log')) {
+        fs.writeFileSync(os.homedir() + '/.jwp/setting/log/' + yyyy + '/' + datestr + '.log', '');
     }
-    logfile = homedir + '/.setting/log/' + yyyy + '/' + datestr + '.log';
-    if (!fs.existsSync(homedir + '/.setting/localdata.json')) {
-        fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
+    logfile = os.homedir() + '/.jwp/setting/log/' + yyyy + '/' + datestr + '.log';
+    if (!fs.existsSync(os.homedir() + '/.jwp/setting/localdata.json')) {
+        fs.writeFileSync(os.homedir() + '/.jwp/setting/localdata.json', JSON.stringify(localdata));
     }
-    localdata = require(homedir + '/.setting/localdata.json');
-    nosync1[homedir + '/.setting'] = 1;
-    nodel1[homedir + '/.setting'] = 1;
+    localdata = require(os.homedir() + '/.jwp/setting/localdata.json');
+    //nosync1[homedir + '/.setting'] = 1;
+    //nodel1[homedir + '/.setting'] = 1;
 
     syncpath = homedir;
     if (dirpath != null && dirpath.length > 0) {
@@ -140,7 +140,7 @@ function sync(pathpath, conf) {
                     }
                 }
             }, this);
-            fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
+            fs.writeFileSync(os.homedir() + '/.jwp/setting/localdata.json', JSON.stringify(localdata));
 
             if (cliConf.strategy == 1 || cliConf.strategy == 2) {
                 for (var key in localdata) {
@@ -224,7 +224,7 @@ function delcheckfinish(dellist) {
 }
 
 function delfinish() {
-    fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
+    fs.writeFileSync(os.homedir() + '/.jwp/setting/localdata.json', JSON.stringify(localdata));
     opt = {
         'host': cliConf.url,
         'port': cliConf.port,
@@ -446,7 +446,7 @@ function upcheckfinish(alldata, uplist) {
 
 function upfinish(alldata) {
     fs.appendFileSync(logfile, new Date() + ' 本地到服务器同步完成\r\n', 'utf-8');
-    fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
+    fs.writeFileSync(os.homedir() + '/.jwp/setting/localdata.json', JSON.stringify(localdata));
     downlist = new Array();
     if (cliConf.strategy == 1 || cliConf.strategy == 3) {
         buildlistdown(alldata, downlist);
@@ -507,7 +507,7 @@ function buildlistdown(alldata, downlist) {
             }
         }
     }, this);
-    //fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
+    //fs.writeFileSync(os.homedir() + '/.jwp/setting/localdata.json', JSON.stringify(localdata));
 }
 
 function downaction(alldata, downlist) {
@@ -559,7 +559,7 @@ function downcheckfinish(alldata, downlist) {
 
 function downfinish(alldata) {
     fs.appendFileSync(logfile, new Date() + ' 服务器到本地同步完成\r\n', 'utf-8');
-    fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
+    fs.writeFileSync(os.homedir() + '/.jwp/setting/localdata.json', JSON.stringify(localdata));
     ipcMain.emit(finishEvent, true);
 }
 
