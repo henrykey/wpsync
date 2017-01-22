@@ -14,6 +14,17 @@ document.addEventListener('click', (event) => {
     saveconfig();
   } else if (event.target.classList.contains('js-save')) {//保存配置信息
     saveconfig();
+  } else if (event.target.classList.contains('js-about-label')) {//click about
+      document.querySelector('.js-about-version').textContent = '版本:0.9.1-alpha';
+      document.querySelector('.js-about-label').className = 'js-about-label tab-item active tgroup-label';
+      document.querySelector('.js-settings-label').className = 'js-settings-label tab-item tgroup-label';
+      document.querySelector('.js-settings-form').className = 'tgroup-setting information jknoshow js-settings-form';
+      document.querySelector('.js-about-form').className = 'tgroup-about-show js-about-form';
+  } else if (event.target.classList.contains('js-settings-label')) {//click setting
+      document.querySelector('.js-about-label').className = 'js-about-label tab-item tgroup-label';
+      document.querySelector('.js-settings-label').className = 'js-settings-label tab-item active tgroup-label';
+      document.querySelector('.js-settings-form').className = 'tgroup-setting information js-settings-form';
+      document.querySelector('.js-about-form').className = 'tgroup-about js-about-form';
   }
   
 })

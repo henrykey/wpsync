@@ -177,9 +177,14 @@ hr{
 
 .jklogo{
   float: right;
-  padding: 5px; 
+  padding: 20px; 
   width: 35%;
 }
+.jkfield{
+  border: 1px solid rgba(185, 181, 181, 0.97);
+  padding: 17px;
+  margin: 5px;
+  background-color: #fafafa;}
 .jkcancel{
   padding-left: 10px;
   padding-right: 10px;
