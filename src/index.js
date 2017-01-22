@@ -15,6 +15,10 @@ document.addEventListener('click', (event) => {
     ipcRenderer.send('openfolder');
   } else if (event.target.classList.contains('opencloud')) {
     ipcRenderer.send('opencloud');
+  } else if (event.target.classList.contains('js-disconnect')) {
+    ipcRenderer.send('setdisconnect',true);
+  } else if (event.target.classList.contains('js-connect')) {
+    ipcRenderer.send('setdisconnect',false);
   }
 })
 
@@ -34,14 +38,16 @@ function getUserInfo() {
   ipcRenderer.on('userinfo', function (event, userinfo) {
     if (userinfo != null) {
       document.querySelector('.js-userinfo').textContent = userinfo.username + "  " + userinfo.deptname + "";
-      document.querySelector('.js-logoninfo').textContent = '已连接';
+      document.querySelector('.js-logoninfo').innerHTML = '已连接';
       document.querySelector('.logonicon').className = 'logonicon icon icon-check jkcheck';
       document.querySelector('.js-spaceused').innerHTML = "已使用:" + userinfo.usedspace + " 共" + userinfo.totalspace;
+      document.querySelector('.js-connect').innerHTML = '<span class="js-disconnect">断开</span>';
     } else {
       document.querySelector('.js-userinfo').textContent = "登录失败";
-      document.querySelector('.js-logoninfo').textContent = '未连接';
+      document.querySelector('.js-logoninfo').innerHTML = '未连接 ';
       document.querySelector('.logonicon').className = 'logonicon icon icon-cancel jkcancel';
       document.querySelector('.js-spaceused').innerHTML = "&nbsp;";
+      document.querySelector('.js-connect').innerHTML = '<span class="js-connect">连接</span>';
     }
 
   });
