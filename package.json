@@ -2,7 +2,7 @@
   "name": "wpsync",
   "productName": "JWP-Alpha",
   "version": "0.9.9-alpha",
-  "website": "http://www.joinkey.com/",
+  "website": "http://www.joinkey.com.cn/",
   "icon": "img/icons/icon.png",
   "description": "Sync app for Joinkey WIM Packhouse",
   "electronVersion": "1.4.13",
