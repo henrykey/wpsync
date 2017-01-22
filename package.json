@@ -10,7 +10,7 @@
   "author": "Joinkey Sofware Co.",
   "license": "ISC",
   "scripts": {
-    "modules":"npm install request fs.notify menubar form-data moment",
+    "modules":"rm -rf node_modules && npm install request fs.notify menubar form-data moment",
     "start": "electron .",
     "build:josx": "build --mac && mv dist/mac/${npm_package_productName}-${npm_package_version}.dmg dist && rm -rf dist/mac",
     "build:jwin64":"electron-windows-inno-installer jwp.iss --icon ./img/icons/icon.ico --platform win32-x64 && mv release/setup.exe dist/setup-win64-${npm_package_version}.exe",

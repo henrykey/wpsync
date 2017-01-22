@@ -4,6 +4,6 @@ compile
 release
 .cache
 npm-debug.log
-.DS_Store
+/.DS_Store
 img/.DS_Store
 
