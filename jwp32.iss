@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "wpsync"
-#define MyAppVersion "0.9.0-alpha"
+#define MyAppVersion "0.9.9-alpha"
 #define MyAppURL "http://www.joikey.com"
 #define MyAppExeName "wpsync.exe"
 #define MyAppPublisher "Joinkey"

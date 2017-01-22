@@ -33,6 +33,7 @@ var os = require('os');
 var defaultSyncFolder = "jwp";//默认同步目录名称
 var defaultJWPFolder = ".jwp";//默认jwp系统文件夹名称
 var disconnect = false;//停止链接
+var jwpversion = "";
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () { //程序退出事件
@@ -84,6 +85,9 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   if (!ret) {//注册失败
     console.log('registration failed')
   }
+
+  //读取version
+  readversion();
 
   //显示窗体
   mb.showWindow();
@@ -280,10 +284,13 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   ipcMain.on('log', function (message) { //打印log
     console.log(moment().format("YYYY-MM-DD HH:mm:ss.SSS") + " " + message);
   });
-  ipcMain.on('setdisconnect', function (event,arg) { //断开连接
+  ipcMain.on('setdisconnect', function (event, arg) { //断开连接
     disconnect = arg;
     ipcMain.emit("log", "disconnect:" + disconnect);
     ipcMain.emit("refreshuserinfo");
+  });
+  ipcMain.on('getversion', function (event,callback) { //获取版本
+    event.sender.send(callback, jwpversion);//将信息发送至窗体
   });
 });
 
@@ -581,7 +588,14 @@ function timerefreshuserinfo() {
   ipcMain.emit("log", "timer refresh userinfo");
   ipcMain.emit("refreshuserinfo");
 }
-
+function readversion() {
+  var packagefile = __dirname + "/../package.json";
+  if (fs.existsSync(packagefile)) {
+    var packageinfo = JSON.parse(fs.readFileSync(packagefile).toString());
+    jwpversion = packageinfo.version;
+  }
+  console.log("version:"+jwpversion);
+}
 setInterval(callSyncMy, 3 * 60 * 1000);//设置定时器-同步我的盘库，3分钟
 
 //setInterval(callSyncTeam, 3*60 * 1000);//设置定时器-同步工作组盘库，3分钟
