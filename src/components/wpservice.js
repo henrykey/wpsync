@@ -3,7 +3,7 @@ const ipcMain = electron.ipcMain
 
 function httppost(options, postData, callback, cbdata) {
     var http = require('http');
-    var retdata;
+    var retdata = {status:"-9"};
     var retstatus = false;
     var req = http.request(options, function (res) {
         var rawData = '';
@@ -38,7 +38,7 @@ function httpmultipart(options, fileKeyValue, callback, cbdata) {
     var http = require('http');
     var path = require('path');
     var fs = require('fs');
-    var retdata;
+    var retdata = {status:"-9"};
 
     var req = http.request(options, function (res) {
         var rawData = '';
@@ -221,7 +221,7 @@ function httpmultipart2(options, fileKeyValue, callback, cbdata) {
 function httpdownload(options, postData, filepath, callback, cbdata) {
     var http = require('http');
     var fs = require('fs');
-    var retdata;
+    var retdata = {status:"-9"};
     //console.log(filepath);
     var file = fs.createWriteStream(filepath);
     var req = http.request(options, function (res) {
@@ -510,6 +510,28 @@ exports.getall2 = function (opt, callback, cbdata) {
         port: opt.port,
         method: "post",
         path: "/wp/sync/getall2",
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    };
+
+    var postData = querystring.stringify({
+        "user": opt.user,
+        "passwd": opt.passwd,
+        "sysid": opt.sysid != null ? opt.sysid : "",
+        "type": opt.type
+    });
+
+    httppost(options, postData, callback, cbdata);
+};
+
+exports.getsystem = function (opt, callback, cbdata) {
+    var querystring = require('querystring');
+    var options = {
+        hostname: opt.host,
+        port: opt.port,
+        method: "post",
+        path: "/wp/sync/getsystem",
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
