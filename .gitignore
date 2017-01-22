@@ -6,4 +6,8 @@ release
 npm-debug.log
 /.DS_Store
 img/.DS_Store
+./test.js
+./sysconfig.json
+
+
 

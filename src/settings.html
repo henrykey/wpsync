@@ -15,7 +15,6 @@
     <header class="toolbar-header jkheader">
       <h1 class="title">智汇仓设置</h1>
     </header>
-
     <div class="tab-group tgroup-label">
       <div class="tab-item active tgroup-label">
         <span class="btn"></span> 设置
@@ -24,59 +23,76 @@
         <span class="btn"></span> 关于
       </div>
     </div>
-    <form class="tgroup-setting information">
+    <form class="tgroup-setting information del-jknoshow">
       <div class="wp-group">
         <div class="group-title"><strong>用户信息</strong></div>
         <div class="form-group group-label">
           <span>账号</span>
           <input style="width:70%;padding:0px" class="form-control" placeholder="请输入账号" id="user" >
-</div>
-<div class="form-group group-label">
-  <span>密码</span>
-  <input style="width:70%;padding:0px" type="password" class="form-control" placeholder="请输入密码" id="passwd">
-</div>
-</div>
-<div class="wp-group">
-  <div class="group-title"><strong>同步模式</strong></div>
-  <div class="radio group-label">
-    <label>
-        <input type="radio" name="synctype" value="1"> 双向
-      </label>
+        </div>
+        <div class="form-group group-label">
+          <span>密码</span>
+          <input style="width:70%;padding:0px" type="password" class="form-control" placeholder="请输入密码" id="passwd">
+        </div>
+      </div>
+      <div class="wp-group">
+        <div class="group-title"><strong>同步模式</strong></div>
+        <div class="radio group-label">
+          <label>
+              <input type="radio" name="synctype" value="1"> 双向
+          </label>
+        </div>
+        <div class="radio group-label">
+          <label>
+            <input type="radio" name="synctype" value="2">
+            本地镜像（上传本地数据）
+          </label>
+        </div>
+        <div class="radio group-label">
+          <label>
+            <input type="radio" name="synctype" value="3">
+            云端镜像（下载云端数据）
+          </label>
+        </div>
+      </div>
+      <div class="wp-group">
+        <div class="group-title"><strong>同步信息</strong></div>
+        <div class="form-group group-label">
+          <span>同步文件夹</span>
+          <input style="width:70%;padding:0px" class="form-control" id="localDir">
+        </div>
+        <div class="form-group group-label">
+          <span>智汇仓网址</span>
+          <input style="width:70%;padding:0px" class="form-control" id="wpaddr">
+        </div>
+      </div>
+    </form>
+    <form class="tgroup-about ded-show">
+      <div class="jklogo">
+        <img src="../img/logo-std.png" width="100%" height="100%">
+      </div>
+      <div>
+        <div class="text-center" style="padding-top:30%"></div>
+        <div class="text-center padded-top-more padded-right" style="font-size:200%">吉高智汇仓</div>
+        <div class="text-center" style="font-size:100%">
+          Joinkey WIM Packhouse
+        </div>
+        <div class="text-center" style="font-size:90%">
+          版本:0.6.2-alpha
+        </div>
+        <div class="text-center" style="font-size:80%">
+          版权所有(c):北京吉高软件有限公司 2017
+        </div>
+        <div class="text-center" style="padding-bottom:30%"></div>
+      </div>
+    </form>    
+    <div class="information">
+      <div class="form-actions">
+        <a class="btn btn-form btn-default icon icon-cancel jkbtn-cancel" onclick="javascript:closewin();"></a>
+        <a class="btn btn-form btn-default pull-right icon icon-check jkbtn-check" onclick="javascript:saveconfig();"></a>
+      </div>
+    </div>
   </div>
-  <div class="radio group-label">
-    <label>
-        <input type="radio" name="synctype" value="2">
-        本地镜像（上传本地数据）
-      </label>
-  </div>
-  <div class="radio group-label">
-    <label>
-        <input type="radio" name="synctype" value="3">
-        云端镜像（下载云端数据）
-      </label>
-  </div>
-</div>
-<div class="wp-group">
-  <div class="group-title"><strong>同步信息</strong></div>
-  <div class="form-group group-label">
-    <span>同步文件夹</span>
-    <input style="width:70%;padding:0px" class="form-control" id="localDir">
-</div>
-
-<div class="form-group group-label">
-  <span>智汇仓网址</span>
-  <input style="width:70%;padding:0px" class="form-control" id="wpaddr">
-</div>
-</div>
-<div class="information">
-  <div class="form-actions">
-    <a class="btn btn-form btn-default icon icon-cancel jkbtn-cancel js-cancel" ></a>
-<a class="btn btn-form btn-default pull-right icon icon-check jkbtn-check js-save" ></a>
-</div>
-</div>
-</form>
-</div>
-
 </body>
 
 </html>
