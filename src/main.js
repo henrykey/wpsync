@@ -13,7 +13,7 @@ const moment = require("moment");
 //加载同步模块
 var sync = require('./components/sync');
 //设置同步完成后的回调事件
-sync.setteamFinishEvent('setsyncteamfinished');
+//sync.setteamFinishEvent('setsyncteamfinished');
 //加载wp服务模块
 var wpservice = require('./components/wpservice');
 //加载文件变的监控模块
@@ -86,6 +86,8 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
   //显示窗体
   mb.showWindow();
+
+  // callSyncMy("");
   //打开调试工具
   //mb.window.webContents.openDevTools();
 
@@ -270,7 +272,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 });
 
 /* 我的盘库 开始------------------------------------------*/
-sync.setmyFinishEvent('setsyncmyfinished');
+sync.setFinishEvent('setsyncfinished');
 var myFileAlert = require('./components/jpwnotify');//监控文件夹
 var syncmyfinished = true;
 
@@ -332,8 +334,7 @@ function startSyncMy(filepath, conf) {//启动同步程序
   syncConf.un = conf.user;
   syncConf.pw = conf.passwd;
   syncConf.localDir = conf.localDir + "/" + defaultSyncFolder;
-  syncConf.mystrategy = conf.synctype;
-  syncConf.teamstrategy = conf.synctype;
+  syncConf.strategy = conf.synctype;
 
   //同步过程中停止文件监控
   myFileAlert.close();
@@ -343,7 +344,7 @@ function startSyncMy(filepath, conf) {//启动同步程序
   try {    
     initSyncFolder(conf,false);
     //开始同步
-    sync.syncmy(filepath, syncConf);
+    sync.sync(filepath, syncConf);
   } catch (e) {
     ipcMain.emit("log", e);
   }
@@ -381,7 +382,7 @@ function callSyncMy(filepath) {
 }
 /*我的盘库 结束============================================== */
 /*工作组盘库 开始------------------------------------------*/
-sync.setteamFinishEvent('setsyncteamfinished');
+//sync.setteamFinishEvent('setsyncteamfinished');
 var teamFileAlert = require('./components/jpwnotify');//监控文件夹
 var syncteamfinished = true;
 
@@ -440,8 +441,7 @@ function startSyncTeam(filepath, conf) {//启动同步程序
   syncConf.un = conf.user;
   syncConf.pw = conf.passwd;
   syncConf.localDir = conf.localDir + "/" + defaultSyncFolder;
-  syncConf.mystrategy = conf.synctype;
-  syncConf.teamstrategy = conf.synctype;
+  syncConf.strategy = conf.synctype;
 
   //同步过程中停止文件监控
   teamFileAlert.close();
@@ -537,7 +537,7 @@ function writeconf(conf) {
 //初始化同步程序目录
 function initSyncFolder(conf,initdata) {
   var homedir = conf.localDir;
-  var mydata = {};
+  var localdata = {};
   var teamdata = {};
   //同步目录不存在
   if (!fs.existsSync(conf.localDir)) {
@@ -559,32 +559,32 @@ function initSyncFolder(conf,initdata) {
     fs.mkdirSync(conf.localDir + "/" + defaultSyncFolder);
   }
   homedir = conf.localDir + "/" + defaultSyncFolder;
-  if (!fs.existsSync(homedir + '/MyFiles')) {
-    fs.mkdirSync(homedir + '/MyFiles');
-  }
-  if (!fs.existsSync(homedir + '/TeamFiles')) {
-    fs.mkdirSync(homedir + '/TeamFiles');
-  }
+  // if (!fs.existsSync(homedir + '/MyFiles')) {
+  //   fs.mkdirSync(homedir + '/MyFiles');
+  // }
+  // if (!fs.existsSync(homedir + '/TeamFiles')) {
+  //   fs.mkdirSync(homedir + '/TeamFiles');
+  // }
   if (!fs.existsSync(homedir + '/.setting')) {
     fs.mkdirSync(homedir + '/.setting');
   }
-  if (!fs.existsSync(homedir + '/.setting/mylog')) {
-    fs.mkdirSync(homedir + '/.setting/mylog');
+  if (!fs.existsSync(homedir + '/.setting/log')) {
+    fs.mkdirSync(homedir + '/.setting/log');
   }
-  if (!fs.existsSync(homedir + '/.setting/teamlog')) {
-    fs.mkdirSync(homedir + '/.setting/teamlog');
-  }
+  // if (!fs.existsSync(homedir + '/.setting/teamlog')) {
+  //   fs.mkdirSync(homedir + '/.setting/teamlog');
+  // }
   //初始化重置data文件
   if(initdata){
-    fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
-    fs.writeFileSync(homedir + '/.setting/teamdata.json', JSON.stringify(teamdata));
+    fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
+    // fs.writeFileSync(homedir + '/.setting/teamdata.json', JSON.stringify(teamdata));
   }else{
-    if (!fs.existsSync(homedir + '/.setting/mydata.json')) {
-      fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
+    if (!fs.existsSync(homedir + '/.setting/localdata.json')) {
+      fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
     }
-    if (!fs.existsSync(homedir + '/.setting/teamdata.json')) {
-      fs.writeFileSync(homedir + '/.setting/teamdata.json', JSON.stringify(teamdata));
-    }
+    // if (!fs.existsSync(homedir + '/.setting/teamdata.json')) {
+    //   fs.writeFileSync(homedir + '/.setting/teamdata.json', JSON.stringify(teamdata));
+    // }
   }
 }
 
@@ -609,8 +609,8 @@ function timerefreshuserinfo() {
   ipcMain.emit("refreshuserinfo");
 }
 
-setInterval(callSyncMy, 3*60 * 1000);//设置定时器-同步我的盘库，3分钟
+setInterval(callSyncMy, 10 * 1000);//设置定时器-同步我的盘库，3分钟
 
 //setInterval(callSyncTeam, 3*60 * 1000);//设置定时器-同步工作组盘库，3分钟
 
-setInterval(timerefreshuserinfo, 10*60 * 1000);//设置定时器-刷新登录，10分钟
+//setInterval(timerefreshuserinfo, 10*60 * 1000);//设置定时器-刷新登录，10分钟
