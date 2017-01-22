@@ -323,6 +323,8 @@ ipcMain.on('setMyFileAlert', function (notifypath) { //开始文件监控
     });
   }
 });
+
+
 function startSyncMy(filepath, conf) {//启动同步程序
   if (!syncmyfinished)
     return;
@@ -346,10 +348,10 @@ function startSyncMy(filepath, conf) {//启动同步程序
     //获取不能删除的文件夹
     syncJWPSystem(function(){
       //开始同步
-      //sync.syncmy(filepath, syncConf);
+      sync.sync(filepath, syncConf);
       
       //测试
-      ipcMain.emit("setsyncmyfinished", true);
+      //ipcMain.emit("setsyncmyfinished", true);
     });
     
   } catch (e) {
@@ -357,6 +359,7 @@ function startSyncMy(filepath, conf) {//启动同步程序
     ipcMain.emit("refreshuserinfo");
   }
 }
+
 //调用同步模块函数
 function callSyncMy(filepath) {
   var conf = getconf();
@@ -462,34 +465,34 @@ function initSyncFolder(conf, initdata) {
   if (!fs.existsSync(conf.localDir + "/" + defaultSyncFolder)) {
     fs.mkdirSync(conf.localDir + "/" + defaultSyncFolder);
   }
-  homedir = conf.localDir + "/" + defaultSyncFolder;
-  if (!fs.existsSync(homedir + '/MyFiles')) {
-    fs.mkdirSync(homedir + '/MyFiles');
-  }
-  if (!fs.existsSync(homedir + '/TeamFiles')) {
-    fs.mkdirSync(homedir + '/TeamFiles');
-  }
-  if (!fs.existsSync(homedir + '/.setting')) {
-    fs.mkdirSync(homedir + '/.setting');
-  }
-  if (!fs.existsSync(homedir + '/.setting/mylog')) {
-    fs.mkdirSync(homedir + '/.setting/mylog');
-  }
-  if (!fs.existsSync(homedir + '/.setting/teamlog')) {
-    fs.mkdirSync(homedir + '/.setting/teamlog');
-  }
-  //初始化重置data文件
-  if (initdata) {
-    fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
-    fs.writeFileSync(homedir + '/.setting/teamdata.json', JSON.stringify(teamdata));
-  } else {
-    if (!fs.existsSync(homedir + '/.setting/mydata.json')) {
-      fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
-    }
-    if (!fs.existsSync(homedir + '/.setting/teamdata.json')) {
-      fs.writeFileSync(homedir + '/.setting/teamdata.json', JSON.stringify(teamdata));
-    }
-  }
+  // homedir = conf.localDir + "/" + defaultSyncFolder;
+  // if (!fs.existsSync(homedir + '/MyFiles')) {
+  //   fs.mkdirSync(homedir + '/MyFiles');
+  // }
+  // if (!fs.existsSync(homedir + '/TeamFiles')) {
+  //   fs.mkdirSync(homedir + '/TeamFiles');
+  // }
+  // if (!fs.existsSync(homedir + '/.setting')) {
+  //   fs.mkdirSync(homedir + '/.setting');
+  // }
+  // if (!fs.existsSync(homedir + '/.setting/mylog')) {
+  //   fs.mkdirSync(homedir + '/.setting/mylog');
+  // }
+  // if (!fs.existsSync(homedir + '/.setting/teamlog')) {
+  //   fs.mkdirSync(homedir + '/.setting/teamlog');
+  // }
+  // //初始化重置data文件
+  // if (initdata) {
+  //   fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
+  //   fs.writeFileSync(homedir + '/.setting/teamdata.json', JSON.stringify(teamdata));
+  // } else {
+  //   if (!fs.existsSync(homedir + '/.setting/mydata.json')) {
+  //     fs.writeFileSync(homedir + '/.setting/mydata.json', JSON.stringify(mydata));
+  //   }
+  //   if (!fs.existsSync(homedir + '/.setting/teamdata.json')) {
+  //     fs.writeFileSync(homedir + '/.setting/teamdata.json', JSON.stringify(teamdata));
+  //   }
+  // }
 }
 
 function initJWPFolder() {//初始化jwp系统文件夹

@@ -12,7 +12,10 @@ document.addEventListener('click', (event) => {
     closewin();    
   } else if (event.target.classList.contains('js-save')) {//保存配置信息
     saveconfig();
+  } else if (event.target.classList.contains('js-save')) {//保存配置信息
+    saveconfig();
   }
+  
 })
 
 
