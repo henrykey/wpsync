@@ -30,8 +30,12 @@ const getFileChangeInfo = () => {
 
 }
 //获取版本信息处理
-const verInfo = () => {
-  document.querySelector('.js-version').textContent = '0.9.0-alpha';
+const verInfo = () => {  
+  ipcRenderer.on('setversion', function (event,version) {
+    document.querySelector('.js-version').textContent=version;
+  });
+  ipcRenderer.send('getversion', 'setversion');
+
 }
 //获取用户信息处理
 function getUserInfo() {
