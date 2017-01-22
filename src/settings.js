@@ -4,9 +4,9 @@ var _conf;
 
 //获取版本信息处理
 const verInfo = () => {  
+    
   ipcRenderer.on('setversion', function (event,version) {
-      console.log(version);
-    document.querySelector('js-about-version').innerHTML ="版本:"+version;
+     document.querySelector('.js-about-version').textContent ="版本:"+version;
   });
   ipcRenderer.send('getversion', 'setversion');
 
@@ -23,7 +23,7 @@ document.addEventListener('click', (event) => {
   } else if (event.target.classList.contains('js-save')) {//保存配置信息
     saveconfig();
   } else if (event.target.classList.contains('js-about-label')) {//click about
-      document.querySelector('.js-about-version').textContent = '版本:0.9.1-alpha';
+      //document.querySelector('.js-about-version').textContent = '版本:0.9.1-alpha';
       document.querySelector('.js-about-label').className = 'js-about-label tab-item active tgroup-label';
       document.querySelector('.js-settings-label').className = 'js-settings-label tab-item tgroup-label';
       document.querySelector('.js-settings-form').className = 'tgroup-setting information jknoshow js-settings-form';
@@ -55,8 +55,9 @@ ipcRenderer.on('alertmessage', function (event,message) {
     alert(message+"");
 });
 
+verInfo();
 $(document).ready(function () {
-    verInfo();
+    
     ipcRenderer.send('getconf', 'getconf...');
 });
 function saveconfig() {    
