@@ -1,7 +1,7 @@
 {
   "name": "wpsync",
   "productName": "JWP-Alpha",
-  "version": "0.9.9",
+  "version": "0.1.0-beta",
   "website": "http://www.joinkey.com.cn/",
   "icon": "img/icons/icon.png",
   "description": "Sync app for Joinkey WIM Packhouse",
@@ -10,6 +10,7 @@
   "author": "Joinkey Sofware Co.",
   "license": "ISC",
   "scripts": {
+    "build:mywin":"electron-windows-inno-installer jwp32.iss --icon ./img/icons/icon.ico --platform win32-ia32 && mv release/setup.exe dist/setup-win32-${npm_package_version}.exe",
     "modules":"rm -rf node_modules && npm install request fs.notify menubar form-data moment",
     "start": "electron .",
     "build:josx": "build --mac && mv dist/mac/${npm_package_productName}-${npm_package_version}.dmg dist && rm -rf dist/mac",
@@ -60,7 +61,7 @@
       ]
     }
   },
-  "sourceFiles":[ "./src/**/**",
+  "sourceFiles":["./package.json", "./src/**/**",
     "./img/**/**",
     "./vendor/**/**"],
   "dependencies": {
