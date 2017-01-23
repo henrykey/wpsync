@@ -53,7 +53,7 @@ app.on('will-quit', function () {//程序即将退出事件
 
 let mb = menubar({//创建托盘窗体
   index: path.join('file://', __dirname, 'index.html'),
-  icon: path.join(__dirname, '../img/icons/jwp-icon.png'),
+  icon: path.join(__dirname, '../img/jwp/icon.iconset/icon_32x32.png'),
   width: 280,
   height: 170,
   resizable: false,
@@ -345,12 +345,29 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
   ipcMain.on('setmenubaricon', function (event, callback) { //设置menubar的图标    
     if(disconnect){
-      mb.tray.setImage(path.join(__dirname, '../img/icons/jwp-cancel.png'))
+      mb.tray.setImage(path.join(__dirname, '../img/cancel/icon.iconset/icon_32x32.png'))
     }else{
       if(!syncmyfinished){
-      mb.tray.setImage(path.join(__dirname, '../img/icons/jwp-refresh.png'))
+      mb.tray.setImage(path.join(__dirname, '../img/refresh/icon.iconset/icon_32x32.png'))
       }else{
-      mb.tray.setImage(path.join(__dirname, '../img/icons/jwp-check.png'))
+        var conf = getconf();
+        var opt = {
+        'host': conf.host,
+        'port': conf.port,
+        'user': conf.user,
+        'passwd': conf.passwd
+      };
+      //test login
+      wpservice.login(opt, function (data, cbdata) {
+        if (data == null || data.status < 0) {
+          mb.tray.setImage(path.join(__dirname, '../img/cancel/icon.iconset/icon_32x32.png'))
+        }
+        //登录成功，准备启动同步
+        else {
+          mb.tray.setImage(path.join(__dirname, '../img/check/icon.iconset/icon_32x32.png'))
+        }
+      });
+      
       }
     }
     
@@ -639,6 +656,6 @@ function readversion() {
 function fireCallSync() {
   ipcMain.emit("callSync");
 }
-setInterval(fireCallSync, 3 * 60 * 1000);//设置定时器-同步我的盘库，3分钟
+setInterval(fireCallSync, 10 * 1000);//设置定时器-同步我的盘库，3分钟
 
 setInterval(timerefreshuserinfo, 10 * 60 * 1000);//设置定时器-刷新登录，10分钟
