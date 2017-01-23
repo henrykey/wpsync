@@ -256,6 +256,9 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       //将密码加密
       conf.passwd = Encrypt(conf.passwd);
     }
+    
+    
+    
     //console.log("save conf to :" + __dirname + "/../../config.json");
 
     writeconf(conf);
@@ -266,6 +269,11 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       initSyncFolder(conf, true);
     }
     else if (!fs.existsSync(conf.localDir + "/" + defaultSyncFolder)) {
+      //初始化同步目录
+      initSyncFolder(conf, true);
+    }
+    //网盘地址改变，清除数据文件
+    if (_conf.host != conf.host || _conf.port != conf.port) {
       //初始化同步目录
       initSyncFolder(conf, true);
     }
