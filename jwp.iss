@@ -8,8 +8,8 @@
 #define MyAppExeName "wpsync.exe"
 #define MyAppPublisher "Joinkey"
 #define SourcePath "release\v1.4.7\win32-x64"
-#define OutputPath "dist"
-#define OutputName "JWP-WIN64-Setup.exe"
+#define OutputPath "release"
+#define OutputName "setup.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
