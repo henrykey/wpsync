@@ -286,12 +286,17 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     console.log(moment().format("YYYY-MM-DD HH:mm:ss.SSS") + " " + message);
   });
   ipcMain.on('setdisconnect', function (event, arg) { //断开连接
+    var call = false;
     //重新连接时调用同步
     if(disconnect&&!arg){
+      call = true;
+      
+    }
+    
+    disconnect = arg;
+    if(call){
       ipcMain.emit("callSync");
     }
-    disconnect = arg;
-    
     ipcMain.emit("log", "disconnect:" + disconnect);
     ipcMain.emit("refreshuserinfo");
   });
