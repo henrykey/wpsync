@@ -587,6 +587,7 @@ function syncJWPSystem(callback) {//同步.jwp的系统数据---暂未实现
       //保存
       sysconfig["nodel"] = nodel;
       sysconfig["nosync"] = nosync;
+      sysconfig["roottree"] = data.list;
       fs.writeFileSync(os.homedir() + '/.jwp/system/sysconfig.json', JSON.stringify(sysconfig));
       callback();
     }
