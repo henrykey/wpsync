@@ -90,6 +90,22 @@ function sync(pathpath, conf) {
     //nosync1[homedir + '/.setting'] = 1;
     //nodel1[homedir + '/.setting'] = 1;
 
+    var roottree = systemconfig.roottree;
+    roottree.forEach(function (element) {
+        var filepath = homedir + '/' + element.path + element.docname;
+        if (!fs.existsSync(filepath)) {
+            fs.mkdirSync(filepath);
+            var obj = new Object();
+            obj.name = element.docname;
+            obj.strmd5 = '';
+            obj.smtime = element.time;
+            obj.sid = element.id;
+            localdata[filepath] = obj;
+        }
+    }, this);
+    fs.writeFileSync(os.homedir() + '/.jwp/setting/localdata.json', JSON.stringify(localdata));
+
+
     syncpath = homedir;
     if (dirpath != null && dirpath.length > 0) {
         syncpath = dirpath;
