@@ -34,6 +34,7 @@ var defaultSyncFolder = "jwp";//默认同步目录名称
 var defaultJWPFolder = ".jwp";//默认jwp系统文件夹名称
 var disconnect = false;//停止链接
 var jwpversion = "";
+var Tray = electron.Tray
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () { //程序退出事件
@@ -52,7 +53,7 @@ app.on('will-quit', function () {//程序即将退出事件
 
 let mb = menubar({//创建托盘窗体
   index: path.join('file://', __dirname, 'index.html'),
-  icon: path.join(__dirname, '../img/icons/IconTemplate.png'),
+  icon: path.join(__dirname, '../img/icons/jwp-icon.png'),
   width: 280,
   height: 170,
   resizable: false,
@@ -215,7 +216,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       else {
         userInfo = data;
       }
-
+      ipcMain.emit("setmenubaricon");
       mb.window.webContents.send('userinfo', userInfo);
     });
 
@@ -286,6 +287,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     console.log(moment().format("YYYY-MM-DD HH:mm:ss.SSS") + " " + message);
   });
   ipcMain.on('setdisconnect', function (event, arg) { //断开连接
+    
     var call = false;
     //重新连接时调用同步
     if(disconnect&&!arg){
@@ -299,6 +301,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     }
     ipcMain.emit("log", "disconnect:" + disconnect);
     ipcMain.emit("refreshuserinfo");
+    ipcMain.emit("setmenubaricon");
   });
   ipcMain.on('getversion', function (event, callback) { //获取版本
     event.sender.send(callback, jwpversion);//将信息发送至窗体
@@ -332,12 +335,27 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
           } catch (e) {
             ipcMain.emit("log", e);
             ipcMain.emit("refreshuserinfo");
+            ipcMain.emit("setmenubaricon");
             ipcMain.emit("setsyncmyfinished", true);
           }
         }
       });
     }
   });
+
+  ipcMain.on('setmenubaricon', function (event, callback) { //设置menubar的图标    
+    if(disconnect){
+      mb.tray.setImage(path.join(__dirname, '../img/icons/jwp-cancel.png'))
+    }else{
+      if(!syncmyfinished){
+      mb.tray.setImage(path.join(__dirname, '../img/icons/jwp-refresh.png'))
+      }else{
+      mb.tray.setImage(path.join(__dirname, '../img/icons/jwp-check.png'))
+      }
+    }
+    
+  });
+  ipcMain.emit("setmenubaricon");
 });
 
 /* 我的盘库 开始------------------------------------------*/
@@ -355,6 +373,7 @@ ipcMain.on('setsyncfinished', function (arg) { //设置我的盘库同步完成�
   mb.window.webContents.send('setsyncfinished', arg);
   //ipcMain.emit("log", "set syncmyfinished:" + arg);
   ipcMain.emit("refreshuserinfo");
+  ipcMain.emit("setmenubaricon");
 });
 
 ipcMain.on('setMyFileAlert', function (notifypath) { //开始文件监控  
@@ -421,7 +440,7 @@ function startSync(filepath, conf) {//启动同步程序
     initSyncFolder(conf, false);
     //获取不能删除的文件夹
     syncJWPSystem(function () {
-
+      ipcMain.emit("setmenubaricon");
       ipcMain.emit("log", "start sync my... ");
       //开始同步
       sync.sync(filepath, syncConf);
