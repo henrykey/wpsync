@@ -93,14 +93,13 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   mb.showWindow();
 
   //开始同步
-  //callSyncMy();
+  ipcMain.emit("callSync");
+  
   //打开调试工具
   //mb.window.webContents.openDevTools();
 
   //设置监控目录
-  ipcMain.emit("setMyFileAlert");
-  ipcMain.emit("setTeamFileAlert");
-
+  
   //注册处理事件的回调函数
   mb.window.on('focus', () => {//获得焦点
     mb.window.transparent = true;
@@ -267,7 +266,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       //初始化同步目录
       initSyncFolder(conf, true);
     }
-    
+
     ipcMain.emit("callSync");//保存配置文件后，马上进行同步
 
     event.sender.send('saveconf', "save conf ok");//将信息发送至窗体
@@ -394,6 +393,8 @@ ipcMain.on('setMyFileAlert', function (notifypath) { //开始文件监控
 function startSync(filepath, conf) {//启动同步程序
   if (!syncmyfinished)
     return;
+  //设置同步状态
+  ipcMain.emit("setsyncfinished", false);
   var syncConf = { url: '', port: '', un: '', pw: '', localDir: '', mystrategy: '', teamstrategy: '' };
   syncConf.url = conf.host;
   syncConf.port = conf.port;
@@ -410,13 +411,14 @@ function startSync(filepath, conf) {//启动同步程序
     initSyncFolder(conf, false);
     //获取不能删除的文件夹
     syncJWPSystem(function () {
-      //设置同步状态
-      ipcMain.emit("setsyncfinished", false);
+
       ipcMain.emit("log", "start sync my... ");
       //开始同步
       sync.sync(filepath, syncConf);
     });
   } catch (e) {
+    //发生异常，将同步状态置为已完成
+    ipcMain.emit("setsyncfinished", true);
     ipcMain.emit("log", e);
     ipcMain.emit("refreshuserinfo");
   }
@@ -598,11 +600,9 @@ function readversion() {
   }
   console.log("version:" + jwpversion);
 }
-function fireCallSync(){
-   ipcMain.emit("callSync");
+function fireCallSync() {
+  ipcMain.emit("callSync");
 }
 setInterval(fireCallSync, 3 * 60 * 1000);//设置定时器-同步我的盘库，3分钟
-
-//setInterval(callSyncTeam, 3*60 * 1000);//设置定时器-同步工作组盘库，3分钟
 
 setInterval(timerefreshuserinfo, 10 * 60 * 1000);//设置定时器-刷新登录，10分钟
