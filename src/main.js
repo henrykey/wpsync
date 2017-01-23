@@ -497,18 +497,18 @@ function initSyncFolder(conf, initdata) {
 
   homedir = conf.localDir + "/" + defaultSyncFolder;
 
-  if (!fs.existsSync(homedir + '/.setting')) {
-    fs.mkdirSync(homedir + '/.setting');
-  }
-  if (!fs.existsSync(homedir + '/.setting/log')) {
-    fs.mkdirSync(homedir + '/.setting/log');
-  }
+  // if (!fs.existsSync(homedir + '/setting')) {
+  //   fs.mkdirSync(homedir + '/setting');
+  // }
+  // if (!fs.existsSync(homedir + '/setting/log')) {
+  //   fs.mkdirSync(homedir + '/setting/log');
+  // }
   //初始化重置data文件
   if (initdata) {
-    fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
+    fs.writeFileSync(os.homedir() + '/' + defaultJWPFolder + '/setting/localdata.json', JSON.stringify(localdata));
   } else {
-    if (!fs.existsSync(homedir + '/.setting/localdata.json')) {
-      fs.writeFileSync(homedir + '/.setting/localdata.json', JSON.stringify(localdata));
+    if (!fs.existsSync(os.homedir() + '/' + defaultJWPFolder + '/setting/localdata.json')) {
+      fs.writeFileSync(os.homedir() + '/' + defaultJWPFolder + '/setting/localdata.json', JSON.stringify(localdata));
     }
   }
 
@@ -528,6 +528,12 @@ function initJWPFolder() {//初始化jwp系统文件夹
   }
   if (!fs.existsSync(homedir + "/system")) {//创建系统同步文件夹
     fs.mkdirSync(homedir + "/system");
+  }
+  if (!fs.existsSync(homedir + '/setting')) {
+    fs.mkdirSync(homedir + '/setting');
+  }
+  if (!fs.existsSync(homedir + '/setting/log')) {
+    fs.mkdirSync(homedir + '/setting/log');
   }
   if (!fs.existsSync(homedir + "/system/sysconfig.json")) {
     fs.writeFileSync(homedir + '/system/sysconfig.json', JSON.stringify(sysconfig));
@@ -566,7 +572,7 @@ function syncJWPSystem(callback) {//同步.jwp的系统数据---暂未实现
       data.nosync.forEach(function (element) {
         nosync[_conf.localDir + "/" + defaultSyncFolder + "/" + element] = 1;
       });
-      nosync[_conf.localDir + "/" + defaultSyncFolder + "/.setting"] = 1;
+      nosync[_conf.localDir + "/" + defaultSyncFolder + "/setting"] = 1;
 
       //保存
       sysconfig["nodel"] = nodel;
