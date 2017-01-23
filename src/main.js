@@ -35,6 +35,9 @@ var defaultJWPFolder = ".jwp";//默认jwp系统文件夹名称
 var disconnect = false;//停止链接
 var jwpversion = "";
 var Tray = electron.Tray
+sync.setFinishEvent('setsyncfinished');
+var myFileAlert = require('./components/jpwnotify');//监控文件夹
+var syncmyfinished = true;
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () { //程序退出事件
@@ -93,8 +96,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   //显示窗体
   mb.showWindow();
 
-  //开始同步
-  ipcMain.emit("callSync");
+  
   
   //打开调试工具
   //mb.window.webContents.openDevTools();
@@ -372,15 +374,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     }
     
   });
-  ipcMain.emit("setmenubaricon");
-});
-
-/* 我的盘库 开始------------------------------------------*/
-sync.setFinishEvent('setsyncfinished');
-var myFileAlert = require('./components/jpwnotify');//监控文件夹
-var syncmyfinished = true;
-
-ipcMain.on('setsyncfinished', function (arg) { //设置我的盘库同步完成状态
+  ipcMain.on('setsyncfinished', function (arg) { //设置我的盘库同步完成状态
   syncmyfinished = arg;
   var _conf = getconf();
   //同步完成，启动文件监控
@@ -434,6 +428,14 @@ ipcMain.on('setMyFileAlert', function (notifypath) { //开始文件监控
     }
   }
 });
+  //开始同步
+  ipcMain.emit("callSync");
+  ipcMain.emit("setmenubaricon");
+});
+
+/* 我的盘库 开始------------------------------------------*/
+
+
 
 
 function startSync(filepath, conf) {//启动同步程序
