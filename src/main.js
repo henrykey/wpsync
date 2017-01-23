@@ -656,6 +656,6 @@ function readversion() {
 function fireCallSync() {
   ipcMain.emit("callSync");
 }
-setInterval(fireCallSync, 3 * 60 * 1000);//设置定时器-同步我的盘库，3分钟
+setInterval(fireCallSync, 5 * 60 * 1000);//设置定时器-同步我的盘库，3分钟
 
 setInterval(timerefreshuserinfo, 10 * 60 * 1000);//设置定时器-刷新登录，10分钟
