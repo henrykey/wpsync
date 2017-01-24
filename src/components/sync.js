@@ -28,6 +28,8 @@ const electron = require('electron')
 const ipcMain = electron.ipcMain
 
 function sync(pathpath, conf) {
+    ipcMain.emit("setuploadnum", 0);
+    ipcMain.emit("setdownloadnum", 0);
     nosync1 = {};
     nosync2 = {};
     nodel1 = {};
@@ -267,9 +269,11 @@ function delfinish() {
             downlist = new Array();
             if (cliConf.strategy == 1 || cliConf.strategy == 2) {
                 buildlistup(data, syncpath, parentid, uplist);
+                ipcMain.emit("setuploadnum", uplist.length);
                 eventsEmitter.emit('upaction', data, uplist);
             } else if (cliConf.strategy == 1 || cliConf.strategy == 3) {
                 buildlistdown(data, downlist);
+                ipcMain.emit("setdownloadnum", downlist.length);
                 eventsEmitter.emit('downaction', data, downlist);
             }
         }
@@ -453,6 +457,7 @@ function upaction(alldata, uplist) {
 }
 
 function upcheckfinish(alldata, uplist) {
+    ipcMain.emit("setuploadfinished", uplist.length);
     if (uplist.length == 0) {
         eventsEmitter.emit('upfinish', alldata);
     } else {
@@ -466,6 +471,7 @@ function upfinish(alldata) {
     downlist = new Array();
     if (cliConf.strategy == 1 || cliConf.strategy == 3) {
         buildlistdown(alldata, downlist);
+        ipcMain.emit("setdownloadnum", downlist.length);
         eventsEmitter.emit('downaction', alldata, downlist);
     } else {
         ipcMain.emit(finishEvent, true);
@@ -566,6 +572,7 @@ function downaction(alldata, downlist) {
 }
 
 function downcheckfinish(alldata, downlist) {
+    ipcMain.emit("setdownloadfinished", downlist.length);
     if (downlist.length == 0) {
         eventsEmitter.emit('downfinish', alldata);
     } else {

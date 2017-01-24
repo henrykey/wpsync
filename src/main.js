@@ -38,6 +38,8 @@ var Tray = electron.Tray
 sync.setFinishEvent('setsyncfinished');
 var myFileAlert = require('./components/jpwnotify');//监控文件夹
 var syncmyfinished = true;
+var uploadnum = 10;
+var downloadnum = 10;
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () { //程序退出事件
@@ -139,7 +141,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
         fullscreenable: false,
         resizable: false,
         parent: this.window,
-        transparent: false
+        transparent: true
       });
       ipcMain.emit("log", arg);
       settingWin.loadURL(`file://${path.join(__dirname, 'settings.html')}`);//加载设置页面
@@ -256,9 +258,9 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       //将密码加密
       conf.passwd = Encrypt(conf.passwd);
     }
-    
-    
-    
+
+
+
     //console.log("save conf to :" + __dirname + "/../../config.json");
 
     writeconf(conf);
@@ -355,10 +357,12 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
   ipcMain.on('setmenubaricon', function (event, callback) { //设置menubar的图标    
     if (disconnect) {
-      mb.tray.setImage(path.join(__dirname, '../img/cancel/icon.iconset/icon_32x32.png'))
+      mb.tray.setImage(path.join(__dirname, '../img/cancel/icon.iconset/icon_32x32.png'));
+      mb.window.webContents.send('setsynccancel', null);
     } else {
       if (!syncmyfinished) {
-        mb.tray.setImage(path.join(__dirname, '../img/refresh/icon.iconset/icon_32x32.png'))
+        mb.tray.setImage(path.join(__dirname, '../img/refresh/icon.iconset/icon_32x32.png'));
+        mb.window.webContents.send('setsyncrefresh', null);
       } else {
         var conf = getconf();
         var opt = {
@@ -370,11 +374,13 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
         //test login
         wpservice.login(opt, function (data, cbdata) {
           if (data == null || data.status < 0) {
-            mb.tray.setImage(path.join(__dirname, '../img/cancel/icon.iconset/icon_32x32.png'))
+            mb.tray.setImage(path.join(__dirname, '../img/cancel/icon.iconset/icon_32x32.png'));
+            mb.window.webContents.send('setsynccancel', null);
           }
           //登录成功，准备启动同步
           else {
-            mb.tray.setImage(path.join(__dirname, '../img/check/icon.iconset/icon_32x32.png'))
+            mb.tray.setImage(path.join(__dirname, '../img/check/icon.iconset/icon_32x32.png'));
+            mb.window.webContents.send('setsynccheck', null);
           }
         });
 
@@ -393,6 +399,21 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     //ipcMain.emit("log", "set syncmyfinished:" + arg);
     ipcMain.emit("refreshuserinfo");
     ipcMain.emit("setmenubaricon");
+  });
+  ipcMain.on('setuploadnum', function (arg) { //设置我的盘库同步完成状态
+    uploadnum = arg;
+    mb.window.webContents.send('setupload', '0/'+uploadnum);
+  });
+  ipcMain.on('setdownloadnum', function (arg) { //设置我的盘库同步完成状态
+    downloadnum = arg;
+    mb.window.webContents.send('setdownload', '0/'+downloadnum);
+  });
+
+  ipcMain.on('setuploadfinished', function (arg) { //设置我的盘库同步完成状态
+    mb.window.webContents.send('setupload', (uploadnum-arg)+'/'+uploadnum);
+  });
+  ipcMain.on('setdownloadfinished', function (arg) { //设置我的盘库同步完成状态
+    mb.window.webContents.send('setdownload', (downloadnum-arg)+'/'+downloadnum);
   });
 
   ipcMain.on('setMyFileAlert', function (notifypath) { //开始文件监控  
