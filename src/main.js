@@ -129,9 +129,12 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     ipcMain.emit("log", arg);
   });
 
-
   ipcMain.on('goto-settings', function (event, arg) {//自定义按设置按钮
     if (settingWin == null) {
+      var trans = true;
+      if(os.type() == 'Darwin'){
+        trans = false;
+      }
       settingWin = new BrowserWindow({//创建设置窗体
         //    index: path.join('file://', __dirname, 'settings.html'),
         width: 350,
@@ -141,7 +144,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
         fullscreenable: false,
         resizable: false,
         parent: this.window,
-        transparent: true
+        transparent: trans
       });
       ipcMain.emit("log", arg);
       settingWin.loadURL(`file://${path.join(__dirname, 'settings.html')}`);//加载设置页面
