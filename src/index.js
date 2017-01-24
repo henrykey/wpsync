@@ -73,6 +73,15 @@ ipcRenderer.on('setsyncfinished', function (event, syncfinished) {
   }
 
 });
+ipcRenderer.on('setsynccancel', function (event,syncfinished) {
+  document.querySelector('.js-syncinfo').innerHTML = '停止同步';
+});
+ipcRenderer.on('setsyncrefresh', function (event,syncfinished) {
+  document.querySelector('.js-syncinfo').innerHTML = '同步中...';
+});
+ipcRenderer.on('setsynccheck', function (event,syncfinished) {
+  document.querySelector('.js-syncinfo').innerHTML = '同步完成';
+});
 
 //执行事件处理程序
 verInfo();//获取版本信息

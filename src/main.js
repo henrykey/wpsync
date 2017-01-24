@@ -355,10 +355,12 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
   ipcMain.on('setmenubaricon', function (event, callback) { //设置menubar的图标    
     if (disconnect) {
-      mb.tray.setImage(path.join(__dirname, '../img/cancel/icon.iconset/icon_32x32.png'))
+      mb.tray.setImage(path.join(__dirname, '../img/cancel/icon.iconset/icon_32x32.png'));
+      mb.window.webContents.send('setsynccancel', null);
     } else {
       if (!syncmyfinished) {
-        mb.tray.setImage(path.join(__dirname, '../img/refresh/icon.iconset/icon_32x32.png'))
+        mb.tray.setImage(path.join(__dirname, '../img/refresh/icon.iconset/icon_32x32.png'));
+        mb.window.webContents.send('setsyncrefresh', null);
       } else {
         var conf = getconf();
         var opt = {
@@ -370,11 +372,13 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
         //test login
         wpservice.login(opt, function (data, cbdata) {
           if (data == null || data.status < 0) {
-            mb.tray.setImage(path.join(__dirname, '../img/cancel/icon.iconset/icon_32x32.png'))
+            mb.tray.setImage(path.join(__dirname, '../img/cancel/icon.iconset/icon_32x32.png'));
+            mb.window.webContents.send('setsynccancel', null);
           }
           //登录成功，准备启动同步
           else {
-            mb.tray.setImage(path.join(__dirname, '../img/check/icon.iconset/icon_32x32.png'))
+            mb.tray.setImage(path.join(__dirname, '../img/check/icon.iconset/icon_32x32.png'));
+            mb.window.webContents.send('setsynccheck', null);
           }
         });
 
