@@ -138,7 +138,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       settingWin = new BrowserWindow({//创建设置窗体
         //    index: path.join('file://', __dirname, 'settings.html'),
         width: 350,
-        height: 420,
+        height: 415,
         show: false,
         frame: false,
         fullscreenable: false,

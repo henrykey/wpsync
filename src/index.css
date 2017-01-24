@@ -17,7 +17,9 @@
   transform: rotate(45deg);
   background-color: #e8e6e8;
 }
-
+.jkdrag{
+    -webkit-app-region: drag;
+}
 .window {
   position: absolute;
 /*  top: 5px; */
