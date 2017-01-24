@@ -141,7 +141,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
         fullscreenable: false,
         resizable: false,
         parent: this.window,
-        transparent: false
+        transparent: true
       });
       ipcMain.emit("log", arg);
       settingWin.loadURL(`file://${path.join(__dirname, 'settings.html')}`);//加载设置页面

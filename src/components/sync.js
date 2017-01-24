@@ -501,6 +501,7 @@ function buildlistdown(alldata, downlist) {
                     aobj.filename = element.docname;
                     aobj.sid = element.id;
                     aobj.filepath = filepath;
+                    aobj.strmd5 = element.md5;
                     aobj.smtime = element.time;
                     downlist.push(aobj);
                 } else {
@@ -511,6 +512,7 @@ function buildlistdown(alldata, downlist) {
                         aobj.filename = element.docname;
                         aobj.sid = element.id;
                         aobj.filepath = filepath;
+                        aobj.strmd5 = element.md5;
                         aobj.smtime = element.time;
                         downlist.push(aobj);
                     } else {
@@ -521,6 +523,7 @@ function buildlistdown(alldata, downlist) {
                             aobj.filename = element.docname;
                             aobj.sid = element.id;
                             aobj.filepath = filepath;
+                            aobj.strmd5 = element.md5;
                             aobj.smtime = element.time;
                             downlist.push(aobj);
                         }
@@ -559,7 +562,7 @@ function downaction(alldata, downlist) {
                     var obj = new Object();
                     obj.type = 2;
                     obj.name = aobj.filename;
-                    obj.strmd5 = getfilemd5(aobj.filepath);
+                    obj.strmd5 = aobj.strmd5;
                     obj.smtime = aobj.smtime;
                     obj.sid = aobj.sid;
                     localdata[aobj.filepath] = obj;
