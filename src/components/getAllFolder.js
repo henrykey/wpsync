@@ -32,8 +32,14 @@ function getFile(dir,fileArr,containfile){
             if(filename=='.setting')
                 return ;
             //console.log("getfile:"+dir + "/" + filename);
-            
-            var stats = fs.statSync(dir + "/" + filename);
+            var stats = null;
+            try{
+              stats = fs.statSync(dir + "/" + filename);
+            }catch(e){
+
+            }
+            if(stats==null)
+              return ;
             if(stats.isDirectory()){
                 fileArr.push(dir + "/" + filename);
                 fileArr = getFile(dir + "/" + filename,fileArr,containfile);
