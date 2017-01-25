@@ -516,8 +516,8 @@ function buildlistdown(alldata, downlist) {
                         aobj.smtime = element.time;
                         downlist.push(aobj);
                     } else {
-                        var strmd5 = getfilemd5(filepath);
-                        if (obj.strmd5 != strmd5) {
+                        //var strmd5 = getfilemd5(filepath);
+                        if (obj.strmd5 != element.md5) {
                             var aobj = new Object();
                             aobj.type = 1;
                             aobj.filename = element.docname;
