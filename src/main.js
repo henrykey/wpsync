@@ -97,14 +97,17 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   readversion();
 
   //显示窗体
-  mb.showWindow();
+  //mb.showWindow();
 
 
 
   //打开调试工具
   //mb.window.webContents.openDevTools();
 
-  //设置监控目录
+  mb.window.on('blur', () => {
+    mb.window.hide();
+    ipcMain.emit("log", "lost focus...");    
+  })
 
   //注册处理事件的回调函数
   mb.window.on('focus', () => {//获得焦点
