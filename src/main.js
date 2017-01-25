@@ -40,6 +40,8 @@ var myFileAlert = require('./components/jpwnotify');//监控文件夹
 var syncmyfinished = true;
 var uploadnum = 10;
 var downloadnum = 10;
+var delaytime = 0;
+var delaypath = "";
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () { //程序退出事件
@@ -65,7 +67,7 @@ let mb = menubar({//创建托盘窗体
   transparent: true,
   showDockIcon: false,
   preloadWindow: true,
-  alwaysOnTop:true,
+  alwaysOnTop: true,
   webPreferences: {
     // Prevents renderer process code from not running when window is
     // hidden
@@ -106,7 +108,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
   mb.window.on('blur', () => {
     mb.window.hide();
-    ipcMain.emit("log", "lost focus...");    
+    ipcMain.emit("log", "lost focus...");
   })
 
   //注册处理事件的回调函数
@@ -259,7 +261,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     //console.log(conf.passwd);
     //密码未改变
     //if (_conf.passwd != null && _conf.passwd != "" && (conf.passwd == null || conf.passwd == "")) {
-    if(_conf.passwd==conf.passwd){
+    if (_conf.passwd == conf.passwd) {
       conf.passwd = _conf.passwd;
     } else {
       //将密码加密
@@ -275,24 +277,24 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     var cleardatafile = false;
     //同步目录改变
     if (_conf.localDir != conf.localDir) {
-      cleardatafile=true;
+      cleardatafile = true;
     }
     else if (!fs.existsSync(conf.localDir + "/" + defaultSyncFolder)) {
-      cleardatafile=true;
+      cleardatafile = true;
     }
     //网盘地址改变，清除数据文件
     if (_conf.host != conf.host || _conf.port != conf.port) {
-      cleardatafile=true;
+      cleardatafile = true;
     }
     //用户改变，清除数据文件
-    if (_conf.user != conf.user ) {
-      cleardatafile=true;
+    if (_conf.user != conf.user) {
+      cleardatafile = true;
     }
     //同步方式改变，清除数据文件
-    if (_conf.synctype != conf.synctype ) {
-      cleardatafile=true;
+    if (_conf.synctype != conf.synctype) {
+      cleardatafile = true;
     }
-    if(cleardatafile){
+    if (cleardatafile) {
       //初始化同步目录
       initSyncFolder(conf, true);
     }
@@ -418,18 +420,18 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
   });
   ipcMain.on('setuploadnum', function (arg) { //设置我的盘库同步完成状态
     uploadnum = arg;
-    mb.window.webContents.send('setupload', '0/'+uploadnum);
+    mb.window.webContents.send('setupload', '0/' + uploadnum);
   });
   ipcMain.on('setdownloadnum', function (arg) { //设置我的盘库同步完成状态
     downloadnum = arg;
-    mb.window.webContents.send('setdownload', '0/'+downloadnum);
+    mb.window.webContents.send('setdownload', '0/' + downloadnum);
   });
 
   ipcMain.on('setuploadfinished', function (arg) { //设置我的盘库同步完成状态
-    mb.window.webContents.send('setupload', (uploadnum-arg)+'/'+uploadnum);
+    mb.window.webContents.send('setupload', (uploadnum - arg) + '/' + uploadnum);
   });
   ipcMain.on('setdownloadfinished', function (arg) { //设置我的盘库同步完成状态
-    mb.window.webContents.send('setdownload', (downloadnum-arg)+'/'+downloadnum);
+    mb.window.webContents.send('setdownload', (downloadnum - arg) + '/' + downloadnum);
   });
 
   ipcMain.on('setMyFileAlert', function (notifypath) { //开始文件监控  
@@ -458,13 +460,17 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
         //注册回调函数
         myFileAlert.start(function (file, event, path) {
           var msg = file + ' ' + event + ' in ' + path; //测试信息
-          ipcMain.emit("log", msg);
+          //ipcMain.emit("log", msg);
           fileChangeInfo = '有文件被改变！'; //更新文件状态信息
           //将文件路径中的"\"替换为"/"
           path = path.replace(/\\/g, "/");
           //ipcMain.emit("log", "myFileAlert:" + path);
           //调用同步程序
-          ipcMain.emit("callSync", path);
+          //if(delaytime!=0)
+          //  clearTimeout(delaytime);
+          ipcMain.emit("delay", path);
+          //delaytime = setTimeout("delay("+path+")", 10 * 1000);
+          //ipcMain.emit("callSync", path);
           //mb.window.webContents.send('file-change-notify', fileChangeInfo);//发送文件状态信息至窗体
         });
       } catch (e) {
@@ -474,11 +480,22 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     }
   });
   //清除同步数据文件  
-  initSyncFolder(getconf(),true);
+  initSyncFolder(getconf(), true);
   //开始同步
   ipcMain.emit("callSync");
   ipcMain.emit("setmenubaricon");
-  
+
+});
+
+ipcMain.on('delay', function (arg) { //设置我的盘库同步完成状态
+  if(delaytime!=0){
+    clearTimeout(delaytime);
+    delaypath=arg;
+  }
+  delaytime=setTimeout(function () {
+    ipcMain.emit("log", "delay:"+delaypath);
+    ipcMain.emit("callSync", delaypath);
+  }, 10 * 1000);
 });
 
 function startSync(filepath, conf) {//启动同步程序
