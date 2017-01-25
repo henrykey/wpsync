@@ -65,6 +65,7 @@ let mb = menubar({//创建托盘窗体
   transparent: true,
   showDockIcon: false,
   preloadWindow: true,
+  alwaysOnTop:true,
   webPreferences: {
     // Prevents renderer process code from not running when window is
     // hidden
