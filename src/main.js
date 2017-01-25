@@ -129,22 +129,19 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     ipcMain.emit("log", arg);
   });
 
+
   ipcMain.on('goto-settings', function (event, arg) {//自定义按设置按钮
     if (settingWin == null) {
-      var trans = true;
-      if(os.type() == 'Darwin'){
-        trans = false;
-      }
       settingWin = new BrowserWindow({//创建设置窗体
         //    index: path.join('file://', __dirname, 'settings.html'),
         width: 350,
-        height: 415,
+        height: 420,
         show: false,
         frame: false,
         fullscreenable: false,
         resizable: false,
         parent: this.window,
-        transparent: trans
+        transparent: false
       });
       ipcMain.emit("log", arg);
       settingWin.loadURL(`file://${path.join(__dirname, 'settings.html')}`);//加载设置页面
@@ -254,8 +251,11 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       return;
     }
     var _conf = getconf();
+    //console.log(_conf.passwd);
+    //console.log(conf.passwd);
     //密码未改变
-    if (_conf.passwd != null && _conf.passwd != "" && (conf.passwd == null || conf.passwd == "")) {
+    //if (_conf.passwd != null && _conf.passwd != "" && (conf.passwd == null || conf.passwd == "")) {
+    if(_conf.passwd==conf.passwd){
       conf.passwd = _conf.passwd;
     } else {
       //将密码加密
