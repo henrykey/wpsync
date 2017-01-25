@@ -268,21 +268,30 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
 
     writeconf(conf);
 
+    var cleardatafile = false;
     //同步目录改变
     if (_conf.localDir != conf.localDir) {
-      //初始化同步目录
-      initSyncFolder(conf, true);
+      cleardatafile=true;
     }
     else if (!fs.existsSync(conf.localDir + "/" + defaultSyncFolder)) {
-      //初始化同步目录
-      initSyncFolder(conf, true);
+      cleardatafile=true;
     }
     //网盘地址改变，清除数据文件
     if (_conf.host != conf.host || _conf.port != conf.port) {
+      cleardatafile=true;
+    }
+    //用户改变，清除数据文件
+    if (_conf.user != conf.user ) {
+      cleardatafile=true;
+    }
+    //同步方式改变，清除数据文件
+    if (_conf.synctype != conf.synctype ) {
+      cleardatafile=true;
+    }
+    if(cleardatafile){
       //初始化同步目录
       initSyncFolder(conf, true);
     }
-
     ipcMain.emit("callSync");//保存配置文件后，马上进行同步
 
     event.sender.send('saveconf', "save conf ok");//将信息发送至窗体
@@ -460,9 +469,12 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
       }
     }
   });
+  //清除同步数据文件  
+  initSyncFolder(getconf(),true);
   //开始同步
   ipcMain.emit("callSync");
   ipcMain.emit("setmenubaricon");
+  
 });
 
 function startSync(filepath, conf) {//启动同步程序
