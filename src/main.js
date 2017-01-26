@@ -22,6 +22,22 @@ var teamFileAlert = require('./components/jpwnotify');
 //LoadUserInfo()
 let autoLaunch = true
 let iconSetting = 'auto'
+let mb = null; //主窗口
+
+//只允许打开一个实例
+const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
+  // Someone tried to run a second instance, we should focus our window.
+  if (mb) {
+    if (mb.window.isMinimized()) mb.window.restore()
+    //mb.window.show()
+    mb.window.focus()
+  }
+})
+
+if (shouldQuit) {
+  app.quit()
+}
+
 
 var fileChangeInfo = '已同步!';//显示文件状态信息
 var userInfo = null;//显示的用户信息
@@ -56,7 +72,7 @@ app.on('will-quit', function () {//程序即将退出事件
 })
 
 
-let mb = menubar({//创建托盘窗体
+mb = menubar({//创建托盘窗体
   index: path.join('file://', __dirname, 'index.html'),
   icon: path.join(__dirname, '../img/jwp/icon.iconset/icon_32x32.png'),
   width: 280,
