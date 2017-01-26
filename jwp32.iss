@@ -3,7 +3,7 @@
 
 #define MyAppName "Joinkey WP"
 #define MyGroup "Joinkey WIM Packhouse"
-#define MyAppVersion "2.3.0.beta"
+#define MyAppVersion "2.3.1.beta"
 #define MyAppURL "http://www.joikey.com"
 #define MyAppExeName "wpsync.exe"
 #define MyAppPublisher "Joinkey"
