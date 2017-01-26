@@ -496,7 +496,7 @@ mb.on('ready', function ready() {//程序就绪事件，主要操作在此完成
     }
   });
   //清除同步数据文件  
-  initSyncFolder(getconf(), true);
+  initSyncFolder(getconf(), false);
   //开始同步
   ipcMain.emit("callSync");
   ipcMain.emit("setmenubaricon");
