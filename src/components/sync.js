@@ -34,8 +34,8 @@ function sync(pathpath, conf) {
     nosync2 = {};
     nodel1 = {};
     nodel2 = {};
-    var systemconfig = require(os.homedir() + '/.jwp/system/sysconfig.json');
-    var userconfig = require(os.homedir() + '/.jwp/system/userconfig.json');
+    var systemconfig = JSON.parse(fs.readFileSync(os.homedir() + '/.jwp/system/sysconfig.json'));
+    var userconfig = JSON.parse(fs.readFileSync(os.homedir() + '/.jwp/system/userconfig.json'));
     var snosync = systemconfig.nosync;
     var unosync = userconfig.nosync;
     var snodel = systemconfig.nodel;
@@ -87,8 +87,9 @@ function sync(pathpath, conf) {
     logfile = os.homedir() + '/.jwp/setting/log/' + yyyy + '/' + datestr + '.log';
     if (!fs.existsSync(os.homedir() + '/.jwp/setting/localdata.json')) {
         fs.writeFileSync(os.homedir() + '/.jwp/setting/localdata.json', JSON.stringify(localdata));
-    }
-    localdata = require(os.homedir() + '/.jwp/setting/localdata.json');
+    } 
+    // localdata = require(os.homedir() + '/.jwp/setting/localdata.json');
+    localdata = JSON.parse(fs.readFileSync(os.homedir() + '/.jwp/setting/localdata.json'));
     //nosync1[homedir + '/.setting'] = 1;
     //nodel1[homedir + '/.setting'] = 1;
 
