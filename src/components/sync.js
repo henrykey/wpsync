@@ -1,4 +1,4 @@
-var dirpath, syncpath, cliConf, homedir, configfile, localdata, dellist, uplist, downlist, logfile, nosync1, nosync2, nodel1, nodel2;
+var dirpath, syncpath, cliConf, homedir, configfile, localdata, dellist, uplist, downlist, logfile, nosync1, nosync2, nodel1, nodel2, zenosync, zenodel;
 var os = require('os');
 var fs = require('fs');
 var Notify = require('fs.notify');
@@ -34,6 +34,8 @@ function sync(pathpath, conf) {
     nosync2 = {};
     nodel1 = {};
     nodel2 = {};
+    zenosync = {};
+    zenodel = {};
     var systemconfig = JSON.parse(fs.readFileSync(os.homedir() + '/.jwp/system/sysconfig.json'));
     var userconfig = JSON.parse(fs.readFileSync(os.homedir() + '/.jwp/system/userconfig.json'));
     var snosync = systemconfig.nosync;
@@ -43,29 +45,37 @@ function sync(pathpath, conf) {
     for (var key in snosync) {
         if (snosync[key] == 1) {
             nosync1[key] = 1;
-        } else {
+        } else if (snosync[key] == 2) {
             nosync2[key] = 1;
+        } else {
+            zenosync[key] = 1;
         }
     }
     for (var key in unosync) {
         if (unosync[key] == 1) {
             nosync1[key] = 1;
-        } else {
+        } else if (unosync[key] == 2) {
             nosync2[key] = 1;
+        } else {
+            zenosync[key] = 1;
         }
     }
     for (var key in snodel) {
         if (snodel[key] == 1) {
             nodel1[key] = 1;
-        } else {
+        } else if (snodel[key] == 2) {
             nodel2[key] = 1;
+        } else {
+            zenodel[key] = 1;
         }
     }
     for (var key in unodel) {
         if (unodel[key] == 1) {
             nodel1[key] = 1;
-        } else {
+        } else if (unodel[key] == 2) {
             nodel2[key] = 1;
+        } else {
+            zenodel[key] = 1;
         }
     }
 
@@ -87,7 +97,7 @@ function sync(pathpath, conf) {
     logfile = os.homedir() + '/.jwp/setting/log/' + yyyy + '/' + datestr + '.log';
     if (!fs.existsSync(os.homedir() + '/.jwp/setting/localdata.json')) {
         fs.writeFileSync(os.homedir() + '/.jwp/setting/localdata.json', JSON.stringify(localdata));
-    } 
+    }
     // localdata = require(os.homedir() + '/.jwp/setting/localdata.json');
     localdata = JSON.parse(fs.readFileSync(os.homedir() + '/.jwp/setting/localdata.json'));
     //nosync1[homedir + '/.setting'] = 1;
@@ -290,62 +300,70 @@ function buildlistup(alldata, pathstr, parentid, uplist) {
 
             var states = fs.statSync(filepath);
             if (!(filepath in nosync1) && !(pathstr in nosync1) && !(file in nosync2)) {
-
-                var obj = localdata[filepath];
-                if (parentid == -999) {
-                    if (obj != null) {
-                        buildlistup(alldata, filepath, obj.sid, uplist);
+                var b = true;
+                for (var key in zenosync) {
+                    var reg = new RegExp(key, "gim");
+                    if(reg.test(file)){
+                        b=false;
                     }
-                } else {
-                    if (obj == null) {
-                        if (states.isDirectory()) {
-                            var aobj = new Object();
-                            aobj.type = 1;
-                            aobj.filename = file;
-                            aobj.pathstr = pathstr;
-                            aobj.parentid = parentid;
-                            aobj.filepath = filepath;
-                            uplist.push(aobj);
-                        } else {
-                            var aobj = new Object();
-                            aobj.type = 2;
-                            aobj.filename = file;
-                            aobj.pathstr = pathstr;
-                            aobj.parentid = parentid;
-                            aobj.filepath = filepath;
-                            uplist.push(aobj);
+                }
+                if (b) {
+                    var obj = localdata[filepath];
+                    if (parentid == -999) {
+                        if (obj != null) {
+                            buildlistup(alldata, filepath, obj.sid, uplist);
                         }
-                        obj = {};
-                        obj.sid = -9999;
                     } else {
-                        if (!states.isDirectory()) {
-                            var strmd5 = getfilemd5(filepath);
-                            if (obj.strmd5 != strmd5) {
-                                var filekey = filepath.replace(homedir + '/', "");
-                                var stime = datamap[filekey].time;
-                                if (states.mtime.getTime() > stime) {
-                                    var aobj = new Object();
-                                    aobj.type = 2;
-                                    aobj.filename = file;
-                                    aobj.pathstr = pathstr;
-                                    aobj.parentid = parentid;
-                                    aobj.filepath = filepath;
-                                    uplist.push(aobj);
-                                } else {
-                                    var aobj = new Object();
-                                    aobj.type = 3;
-                                    aobj.filename = file;
-                                    aobj.pathstr = pathstr;
-                                    aobj.parentid = parentid;
-                                    aobj.filepath = filepath;
-                                    uplist.push(aobj);
-                                }
+                        if (obj == null) {
+                            if (states.isDirectory()) {
+                                var aobj = new Object();
+                                aobj.type = 1;
+                                aobj.filename = file;
+                                aobj.pathstr = pathstr;
+                                aobj.parentid = parentid;
+                                aobj.filepath = filepath;
+                                uplist.push(aobj);
+                            } else {
+                                var aobj = new Object();
+                                aobj.type = 2;
+                                aobj.filename = file;
+                                aobj.pathstr = pathstr;
+                                aobj.parentid = parentid;
+                                aobj.filepath = filepath;
+                                uplist.push(aobj);
+                            }
+                            obj = {};
+                            obj.sid = -9999;
+                        } else {
+                            if (!states.isDirectory()) {
+                                var strmd5 = getfilemd5(filepath);
+                                if (obj.strmd5 != strmd5) {
+                                    var filekey = filepath.replace(homedir + '/', "");
+                                    var stime = datamap[filekey].time;
+                                    if (states.mtime.getTime() > stime) {
+                                        var aobj = new Object();
+                                        aobj.type = 2;
+                                        aobj.filename = file;
+                                        aobj.pathstr = pathstr;
+                                        aobj.parentid = parentid;
+                                        aobj.filepath = filepath;
+                                        uplist.push(aobj);
+                                    } else {
+                                        var aobj = new Object();
+                                        aobj.type = 3;
+                                        aobj.filename = file;
+                                        aobj.pathstr = pathstr;
+                                        aobj.parentid = parentid;
+                                        aobj.filepath = filepath;
+                                        uplist.push(aobj);
+                                    }
 
+                                }
                             }
                         }
-                    }
-                    if (states.isDirectory()) {
-                        buildlistup(alldata, filepath, obj.sid, uplist);
+                        if (states.isDirectory()) {
+                            buildlistup(alldata, filepath, obj.sid, uplist);
+                        }
                     }
                 }
             }
