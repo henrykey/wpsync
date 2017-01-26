@@ -17,7 +17,7 @@
     "build:jwin64":"electron-windows-inno-installer jwp.iss --icon ./img/icons/icon.ico --platform win32-x64 && mv release/setup.exe dist/setup-win64-${npm_package_version}.exe",
     "build:jwin32":"electron-windows-inno-installer jwp32.iss --icon ./img/icons/icon.ico --platform win32-ia32 && mv release/setup.exe dist/setup-win32-${npm_package_version}.exe",
     "build": "npm run build:osx && npm run package:osx && rm -rf ${npm_package_productName}-darwin-x64 && npm run build:jwin64 && npm run build:jwin32",
-    "build:osx": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --overwrite --prune --asar --arch=all --platform=darwin --icon=./img/icons/Icon.icns --version=$npm_package_electronVersion --app-version=$npm_package_version",
+    "build:osx": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --ignore=compile --ignore=.cache --ignore=release --overwrite --prune --asar --arch=all --platform=darwin --icon=./img/icons/Icon.icns --version=$npm_package_electronVersion --app-version=$npm_package_version",
     "build:mywin": "build --win",
     "build:mywin32": "build --win --ia32",
     "build:myosx":"rm -rf ${npm_package_productName}-darwin-x64 && npm run build:osx && npm run package:osx",
