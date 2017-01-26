@@ -182,7 +182,7 @@ function sync(pathpath, conf) {
                 for (var key in localdata) {
                     if (key.indexOf(syncpath) > -1) {
                         var filekey = key.replace(homedir + '/', "");
-                        if (!(filekey in nodel1)) {
+                        if (!(key in nodel1)) {
                             if (!(filekey in datamap)) {
                                 if (fs.existsSync(key)) {
                                     if (fs.statSync(key).isDirectory()) { // recurse
