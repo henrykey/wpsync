@@ -1,28 +1,25 @@
-var fs = require('fs')
+var fs = require('fs');
+var crypto = require('crypto');
 
-
-//遍历文件夹，获取所有文件夹里面的文件信息
+//遍历文件夹，获取所有文件夹里面的文件信息, 为每个子目录生成md5码
 /*
  * @param path 路径
  *
  */
 
-function geFileList(path)
+getPathMD5 = function (path)
 {
-   var folderParam = [];
-   var filesList = [];
-   var str = readFile(path,filesList);
-
-   console.log('root path:' + str);
-   return filesList;
+   var folderList = [];
+   readFile(path,folderList);
+   folderList.forEach(f => console.log(f.name + f.value + '\n'+f.md5 + '\n'));
+   return folderList.reverse();
 }
 
 //遍历读取文件
-function readFile(path,filesList)
+function readFile(path,folderList)
 {
    var folderParam = path + '\n';
    files = fs.readdirSync(path);//需要用到同步读取
-//   console.log('dir:'+ path);
    files.forEach(walk);
    function walk(file)
    {
@@ -30,8 +27,7 @@ function readFile(path,filesList)
         if(states.isDirectory())
         {
           folderParam += file + ',-1\n';
-          var strfiles = readFile(path+'/'+file,filesList);
-          console.log(strfiles);
+          readFile(path+'/'+file, folderList);
         }
         else
         {
@@ -41,13 +37,21 @@ function readFile(path,filesList)
             obj.size = states.size;//文件大小，以字节为单位
             obj.name = file;//文件名
             obj.path = path+'/'+file; //文件绝对路径
-            filesList.push(obj);
+//            filesList.push(obj);
         }
     }
-    return folderParam
+    var obj = new Object();
+    var n = folderParam.indexOf('\n');
+    obj.name = folderParam.slice(0, n);
+    obj.value = folderParam.slice(n, folderParam.length - 1);
+    var md5sum = crypto.createHash('md5');
+    md5sum.update(obj.value);
+    obj.md5 = md5sum.digest('hex');
+    folderList.push(obj);
+//    return folderParam
 }
 
-geFileList('/Users/kehongwei/test');
+getPathMD5('/Users/kehongwei/test');
 /*
 //写入文件utf-8格式
 function writeFile(fileName,data)
