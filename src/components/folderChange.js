@@ -7,11 +7,10 @@ var crypto = require('crypto');
  *
  */
 
-getPathMD5 = function (path)
+exports.getPathMD5 = function (path)
 {
    var folderList = [];
    readFile(path,folderList);
-   folderList.forEach(f => console.log(f.name + f.value + '\n'+f.md5 + '\n'));
    return folderList.reverse();
 }
 
@@ -41,17 +40,19 @@ function readFile(path,folderList)
         }
     }
     var obj = new Object();
-    var n = folderParam.indexOf('\n');
-    obj.name = folderParam.slice(0, n);
-    obj.value = folderParam.slice(n, folderParam.length - 1);
+    var n = folderParam.indexOf('\n'); //定位目录全路径名称长度
+    obj.name = folderParam.slice(0, n);//取出目录名
+    var value = folderParam.slice(n, folderParam.length - 1); //取出剩余的所有内容
+    //计算内容的md5码
     var md5sum = crypto.createHash('md5');
-    md5sum.update(obj.value);
+    md5sum.update(value);
+    //按16进制取md5
     obj.md5 = md5sum.digest('hex');
+    //放入数组
     folderList.push(obj);
-//    return folderParam
 }
 
-getPathMD5('/Users/kehongwei/test');
+//getPathMD5('/Users/kehongwei/test');
 /*
 //写入文件utf-8格式
 function writeFile(fileName,data)
