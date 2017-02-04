@@ -9,7 +9,7 @@ var crypto = require('crypto');
  *********/
 var oriFolderStatus = {};
 var folderStatus = {};
-var chglist = {};
+var chglist = [];
 exports.checkPath = function (path, recordFile){
   folderStatus = this.getPathMD5(path);
   if(!fs.existsSync(recordFile)){
@@ -26,7 +26,7 @@ exports.checkPath = function (path, recordFile){
 /********
  * 获取变化目录
  */
-exports.getChgDir()
+exports.getChgDir = function ()
 {
   return chglist;
 }
@@ -41,19 +41,20 @@ function compDir(){
   if(folderStatus.length != oriFolderStatus.length){
     res = 1;//目录数目不同，结果为有变化
   }
-  //遍历当前目录
-  var n = oriFolderStatus.length;
-  var status = new Object();
-  for(var i = 0; i < n; ++i){
-    var oriStatus = oriFolderStatus.pop();//获取相同目录先前状态
-    var currStatus = searchDir(oriStatus);//获取当前一个目录
+  //遍历先前目录状态
+  while(oriFolderStatus.length > 0){
+    var oriStatus = oriFolderStatus.pop();//获取目录先前状态
+    var currStatus = searchDir(oriStatus);//获取相同目录当前状态
     if (currStatus == null){ //原先目录不存在
+      var status = new Object();
       res = 1; //设定为有变化
-      status.name = currStatus.name;
+      status.name = oriStatus.name;
       status.value = 'del';
       chglist.push(status);//当前目录名放入数组
     }
     else if (currStatus.md5 != oriStatus.md5){//目录存在，测试md5码是否相同
+      var status = new Object();
+      res = 1;
       status.name = currStatus.name;
       status.value = 'chg';
       chglist.push(status); //md5码不同，目录有变化，名称放入数组
@@ -62,6 +63,7 @@ function compDir(){
   //获取未被被处理过的
   var rest = folderStatus.filter(f => f.name != 'pop');
   rest.forEach(f => {
+    var status = new Object();
     status.name = f.name;
     status.value = 'new';
     chglist.push(status)
@@ -72,7 +74,9 @@ function compDir(){
 function searchDir(dirStatus){
   for (var i = 0; i < folderStatus.length; ++i){
     if (dirStatus.name == folderStatus[i].name){
-      var st = folderStatus[i];
+      var st = new Object();
+      st.name = folderStatus[i].name;
+      st.md5 = folderStatus[i].md5;
       folderStatus[i].name = 'pop';
       return st;
     }
@@ -89,7 +93,7 @@ exports.getPathMD5 = function (path)
 {
    var folderList = [];
    readFile(path,folderList);
-   return folderList.reverse();
+   return folderList;
 }
 
 //遍历读取文件
@@ -129,39 +133,3 @@ function readFile(path,folderList)
     //放入数组
     folderList.push(obj);
 }
-
-//getPathMD5('/Users/kehongwei/test');
-/*
-//写入文件utf-8格式
-function writeFile(fileName,data)
-{
-  fs.writeFile(fileName,data,'utf-8',complete);
-  function complete()
-  {
-     console.log("文件生成成功");
-  }
-}
-
-
-var filesList = geFileList("G:/nodejs");
-filesList.sort(sortHandler);
-function sortHandler(a,b)
-{
-  if(a.size > b.size)
-   return -1;
-  else if(a.size < b.size) return 1
-   return 0;
-}
-var str='';
-for(var i=0;i<filesList.length;i++)
-{
-   var item = filesList[i];
-   var desc ="文件名:"+item.name + "  "
-        +"大小:"+(item.size/1024).toFixed(2) +"/kb"+"  "
-        +"路径:"+item.path;
-   str+=desc +"\n"
-}
-
-
-writeFile("test.txt",str);
-*/
