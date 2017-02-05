@@ -5,11 +5,12 @@ var crypto = require('crypto');
 /********
  * @param path 欲检查目录的路径
  * @param recordFile 纪录目录状态的json文件
- * @return folderArr 有变化子目录的数组
+ * @return 0:无变化 1: 有变化
  *********/
 var oriFolderStatus = {};
 var folderStatus = {};
 var chglist = [];
+var ignoreFolders = ['^\\.\\w*', 'Library']; //忽略目录／文件列表，隐藏目录／文件
 exports.checkPath = function (path, recordFile){
   folderStatus = this.getPathMD5(path);
   if(!fs.existsSync(recordFile)){
@@ -19,8 +20,13 @@ exports.checkPath = function (path, recordFile){
   var jstr = fs.readFileSync(recordFile);
   oriFolderStatus = JSON.parse(jstr);
   //write current status into file
-  fs.writeFileSync(recordFile, JSON.stringify(folderStatus));
-  return compDir();
+  jstr = JSON.stringify(folderStatus);
+  var res = compDir();
+  if(res == 1){
+    console.log('writting status file...')
+    fs.writeFileSync(recordFile, jstr);
+  }
+  return res;
 }
 
 /********
@@ -29,6 +35,14 @@ exports.checkPath = function (path, recordFile){
 exports.getChgDir = function ()
 {
   return chglist;
+}
+
+/*****
+ * 添加需忽略的目录或文件
+ */
+exports.addIgoreFile = function (fn)
+{
+  ignoreFolders.push(fn);
 }
 
 /*****
@@ -100,11 +114,27 @@ exports.getPathMD5 = function (path)
 function readFile(path,folderList)
 {
    var folderParam = path + '\n';
-   files = fs.readdirSync(path);//需要用到同步读取
+   try{
+    files = fs.readdirSync(path).filter(f => {
+      var matchf = ignoreFolders.filter(folder => f.match(folder));
+      return (matchf.length == 0);
+     });//需要用到同步读取
+
+   }
+   catch(e){
+      console.log(e)
+      return;
+   }
    files.forEach(walk);
    function walk(file)
    {
+      try{
         states = fs.statSync(path+'/'+file);
+      }
+      catch(e){
+        console.log(e)
+        return;
+      }
         if(states.isDirectory())
         {
           folderParam += file + ',-1\n';
